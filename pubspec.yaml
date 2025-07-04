@@ -53,7 +53,7 @@ dependencies:
   
   # Internationalization
   intl: ^0.19.0
-  
+
   # File system
   path_provider: ^2.1.1
   
@@ -65,6 +65,10 @@ dependencies:
   
   # CSV processing
   csv: ^6.0.0
+  
+  # Image picker for logo upload
+  image_picker: ^1.0.7
+  path: ^1.9.1
 
 dev_dependencies:
   flutter_test:

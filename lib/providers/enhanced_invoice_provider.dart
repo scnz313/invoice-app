@@ -5,6 +5,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import '../models/invoice.dart';
 import '../models/client.dart';
 import '../utils/validation_helper.dart';
+import '../utils/logger.dart';
 
 enum LoadingState { idle, loading, success, error }
 
@@ -107,8 +108,8 @@ class EnhancedInvoiceProvider extends ChangeNotifier {
       // Set up connectivity monitoring
       _setupConnectivityMonitoring();
       
-      // Load invoices
-      await loadInvoices();
+      // Load invoices without calling initialize again
+      await _loadInvoicesInternal();
       
       // Sync pending changes if online
       if (!_state.isOffline) {
@@ -119,6 +120,114 @@ class EnhancedInvoiceProvider extends ChangeNotifier {
         loadingState: LoadingState.error,
         errorMessage: 'Failed to initialize: $e',
       ));
+    }
+  }
+
+  Future<void> _loadInvoicesInternal() async {
+    try {
+      // Don't update loading state during initialization to avoid setState during build
+      // Get data with additional error handling for corrupted data
+      List<String> invoicesJson;
+      List<String> pendingJson;
+      
+      try {
+        invoicesJson = _prefs.getStringList('invoices') ?? [];
+      } catch (e) {
+        Logger.warning('Error loading invoices list: $e - Clearing corrupted data', 'InvoiceProvider');
+        await _prefs.remove('invoices');
+        invoicesJson = [];
+      }
+      
+      try {
+        pendingJson = _prefs.getStringList('pending_invoices') ?? [];
+      } catch (e) {
+        Logger.warning('Error loading pending invoices list: $e - Clearing corrupted data', 'InvoiceProvider');
+        await _prefs.remove('pending_invoices');
+        pendingJson = [];
+      }
+
+      // Data migration logic (same as before)
+      List<String> _migrateIfNecessary(List<String> raw) {
+        if (raw.length == 1) {
+          try {
+            final decoded = jsonDecode(raw.first);
+            if (decoded is List) {
+              final normalized = decoded
+                  .map((e) => json.encode(e))
+                  .cast<String>()
+                  .toList();
+              return normalized;
+            }
+          } catch (_) {
+            // ignore – fallback to current raw list
+          }
+        }
+        return raw;
+      }
+
+      final normalizedInvoicesJson = _migrateIfNecessary(invoicesJson);
+      final normalizedPendingJson = _migrateIfNecessary(pendingJson);
+
+      // Persist back if migration occurred
+      if (normalizedInvoicesJson.length != invoicesJson.length) {
+        await _prefs.setStringList('invoices', normalizedInvoicesJson);
+      }
+      if (normalizedPendingJson.length != pendingJson.length) {
+        await _prefs.setStringList('pending_invoices', normalizedPendingJson);
+      }
+
+      // Parse invoices with robust error handling
+      final invoices = <Invoice>[];
+      for (final jsonString in normalizedInvoicesJson) {
+        try {
+          final invoice = Invoice.fromJson(jsonDecode(jsonString));
+          invoices.add(invoice);
+        } catch (e) {
+          Logger.warning('Error parsing invoice JSON: $e - Skipping corrupted invoice', 'InvoiceProvider');
+          // Continue with other invoices instead of crashing
+        }
+      }
+
+      // Parse pending invoices with robust error handling
+      final pendingInvoices = <Invoice>[];
+      for (final jsonString in normalizedPendingJson) {
+        try {
+          final invoice = Invoice.fromJson(jsonDecode(jsonString));
+          pendingInvoices.add(invoice);
+        } catch (e) {
+          Logger.warning('Error parsing pending invoice JSON: $e - Skipping corrupted invoice', 'InvoiceProvider');
+          // Continue with other invoices instead of crashing
+        }
+             }
+       
+       // Load sync statuses with error handling
+       Map<String, SyncStatus> syncStatuses = {};
+       try {
+         final syncStatusesJson = _prefs.getString('sync_statuses') ?? '{}';
+         syncStatuses = Map<String, SyncStatus>.from(
+           jsonDecode(syncStatusesJson).map((key, value) => 
+             MapEntry(key, SyncStatus.values[value])
+           )
+         );
+       } catch (e) {
+         Logger.warning('Error loading sync statuses: $e - Using empty map', 'InvoiceProvider');
+         await _prefs.remove('sync_statuses');
+         syncStatuses = {};
+       }
+      
+      _updateState(_state.copyWith(
+        invoices: invoices,
+        pendingInvoices: pendingInvoices,
+        syncStatuses: syncStatuses,
+        loadingState: LoadingState.success,
+        errorMessage: null,
+      ));
+    } catch (e) {
+      _updateState(_state.copyWith(
+        loadingState: LoadingState.error,
+        errorMessage: 'Failed to load invoices: $e',
+      ));
+      rethrow;
     }
   }
 
@@ -140,17 +249,61 @@ class EnhancedInvoiceProvider extends ChangeNotifier {
     if (!_isInitialized) await initialize();
     
     try {
-      _updateState(_state.copyWith(loadingState: LoadingState.loading));
+      // Only update loading state if not already loading to avoid setState during build
+      if (_state.loadingState != LoadingState.loading) {
+        _updateState(_state.copyWith(loadingState: LoadingState.loading));
+      }
       
       final invoicesJson = _prefs.getStringList('invoices') ?? [];
       final pendingJson = _prefs.getStringList('pending_invoices') ?? [];
-      
-      final invoices = invoicesJson
-          .map((json) => Invoice.fromJson(jsonDecode(json)))
+
+      // ------------------------------------------------------------------
+      // Data-migration: Earlier versions stored the **entire list** of
+      // invoices as ONE encoded JSON string inside the StringList. When
+      // we decode such an element we get `List<dynamic>` instead of the
+      // expected `Map<String,dynamic>` which causes the
+      // `type 'String' is not a subtype of type 'List<dynamic>?'` crash.
+      //
+      // Detect that condition and explode the single element into the
+      // new canonical format of List<String> (each element = one invoice
+      // json-encoded map).  The same logic is applied to pending invoices.
+      // ------------------------------------------------------------------
+      List<String> _migrateIfNecessary(List<String> raw) {
+        if (raw.length == 1) {
+          try {
+            final decoded = jsonDecode(raw.first);
+            if (decoded is List) {
+              // old format detected – convert
+              final normalized = decoded
+                  .map((e) => json.encode(e))
+                  .cast<String>()
+                  .toList();
+              return normalized;
+            }
+          } catch (_) {
+            // ignore – fallback to current raw list
+          }
+        }
+        return raw;
+      }
+
+      final normalizedInvoicesJson = _migrateIfNecessary(invoicesJson);
+      final normalizedPendingJson = _migrateIfNecessary(pendingJson);
+
+      // Persist back if migration occurred
+      if (normalizedInvoicesJson.length != invoicesJson.length) {
+        await _prefs.setStringList('invoices', normalizedInvoicesJson);
+      }
+      if (normalizedPendingJson.length != pendingJson.length) {
+        await _prefs.setStringList('pending_invoices', normalizedPendingJson);
+      }
+
+      final invoices = normalizedInvoicesJson
+          .map((j) => Invoice.fromJson(jsonDecode(j)))
           .toList();
-      
-      final pendingInvoices = pendingJson
-          .map((json) => Invoice.fromJson(jsonDecode(json)))
+
+      final pendingInvoices = normalizedPendingJson
+          .map((j) => Invoice.fromJson(jsonDecode(j)))
           .toList();
       
       // Load sync statuses
@@ -515,7 +668,7 @@ class EnhancedInvoiceProvider extends ChangeNotifier {
       _updateState(_state.copyWith(pendingInvoices: []));
       
     } catch (e) {
-      debugPrint('Failed to sync pending changes: $e');
+      Logger.error('Failed to sync pending changes', 'InvoiceProvider', e);
     }
   }
 

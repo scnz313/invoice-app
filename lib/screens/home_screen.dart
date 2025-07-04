@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/client_provider.dart';
-import '../providers/invoice_provider.dart';
+import '../providers/enhanced_invoice_provider.dart';
 import '../providers/settings_provider.dart';
 import '../models/invoice.dart';
 import '../widgets/dashboard_card.dart';
@@ -26,6 +26,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late PageController _pageController;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  bool _isLoading = true;
+  String? _error;
 
   @override
   void initState() {
@@ -58,15 +60,64 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Future<void> _loadData() async {
-    await Provider.of<ClientProvider>(context, listen: false).loadClients();
-    await Provider.of<InvoiceProvider>(context, listen: false).loadInvoices();
-    await Provider.of<SettingsProvider>(context, listen: false).loadSettings();
+    // No context usage before await, so it's safe.
+    final clientProvider = Provider.of<ClientProvider>(context, listen: false);
+    final invoiceProvider = Provider.of<EnhancedInvoiceProvider>(context, listen: false);
+    final settingsProvider = Provider.of<SettingsProvider>(context, listen: false);
+
+    try {
+      await clientProvider.loadClients();
+      await invoiceProvider.loadInvoices();
+      await settingsProvider.loadSettings();
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_error != null) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Error loading data: $_error'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _isLoading = true;
+                    _error = null;
+                  });
+                  _loadData();
+                },
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: PageView(
         controller: _pageController,
         onPageChanged: (index) {
@@ -82,17 +133,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        decoration: BoxDecoration(
+      decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withAlpha((255 * 0.08).round()),
               blurRadius: 12,
               offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: SafeArea(
+          ),
+        ],
+      ),
+      child: SafeArea(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -125,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? primaryColor.withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? primaryColor.withAlpha((255 * 0.1).round()) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -185,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       backgroundColor: Theme.of(context).colorScheme.surface,
       foregroundColor: Theme.of(context).colorScheme.onSurface,
       elevation: 0,
-      shadowColor: Colors.black.withOpacity(0.1),
+      shadowColor: Colors.black.withAlpha((255 * 0.1).round()),
       flexibleSpace: FlexibleSpaceBar(
         titlePadding: const EdgeInsets.only(left: 24, bottom: 16),
         title: Text(
@@ -203,7 +254,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               end: Alignment.bottomRight,
               colors: [
                 Theme.of(context).colorScheme.surface,
-                Theme.of(context).colorScheme.surfaceVariant,
+                Theme.of(context).colorScheme.surfaceContainerHighest,
               ],
             ),
           ),
@@ -220,9 +271,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildWelcomeSection() {
-    return Consumer2<InvoiceProvider, ClientProvider>(
-      builder: (context, invoiceProvider, clientProvider, child) {
-        final hasData = invoiceProvider.invoices.isNotEmpty || clientProvider.clients.isNotEmpty;
+    // Use nested Selectors so that this widget only rebuilds when
+    // the length of invoices or clients actually changes.
+    return Selector<EnhancedInvoiceProvider, bool>(
+      selector: (_, p) => p.invoices.isNotEmpty,
+      builder: (context, hasInvoices, _) {
+        return Selector<ClientProvider, bool>(
+          selector: (_, p) => p.clients.isNotEmpty,
+          builder: (context, hasClients, __) {
+            final hasData = hasInvoices || hasClients;
         
         if (hasData) {
           return Container(
@@ -232,8 +289,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                  Theme.of(context).colorScheme.secondary.withOpacity(0.05),
+                  Theme.of(context).colorScheme.primary.withAlpha((255 * 0.1).round()),
+                  Theme.of(context).colorScheme.secondary.withAlpha((255 * 0.05).round()),
                 ],
               ),
               borderRadius: BorderRadius.circular(20),
@@ -287,6 +344,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         } else {
           return _buildEmptyState();
         }
+          },
+        );
       },
     );
   }
@@ -368,8 +427,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildMetricsCards() {
-    return Consumer<InvoiceProvider>(
-      builder: (context, invoiceProvider, child) {
+    return Selector<EnhancedInvoiceProvider, Map<String, double>>(
+      selector: (_, provider) => {
+        'total': provider.totalAmount,
+        'pending': provider.pendingAmount,
+        'paid': provider.paidAmount,
+        'overdue': provider.overdueInvoices
+            .fold(0.0, (sum, inv) => sum + inv.total),
+      },
+      builder: (context, metrics, child) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -385,9 +451,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 Expanded(
                   child: DashboardCard(
                     title: 'Total Revenue',
-                    value: CurrencyHelper.formatAmount(invoiceProvider.totalRevenue),
+                    value: CurrencyHelper.formatAmount(metrics['total'] ?? 0),
                     icon: Icons.account_balance_wallet,
-                    color: const Color(0xFF00C853),
+                    color: context.successColor,
                     onTap: () => _navigateToInvoices(),
                   ),
                 ),
@@ -395,9 +461,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 Expanded(
                   child: DashboardCard(
                     title: 'Pending',
-                    value: CurrencyHelper.formatAmount(invoiceProvider.pendingAmount),
+                    value: CurrencyHelper.formatAmount(metrics['pending'] ?? 0),
                     icon: Icons.hourglass_empty,
-                    color: const Color(0xFFFF9800),
+                    color: context.warningColor,
                     onTap: () => _navigateToInvoices(),
                   ),
                 ),
@@ -409,9 +475,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 Expanded(
                   child: DashboardCard(
                     title: 'Overdue',
-                    value: CurrencyHelper.formatAmount(invoiceProvider.overdueAmount),
+                    value: CurrencyHelper.formatAmount(metrics['overdue'] ?? 0),
                     icon: Icons.warning_amber,
-                    color: const Color(0xFFE57373),
+                    color: Theme.of(context).colorScheme.error,
                     onTap: () => _navigateToInvoices(),
                   ),
                 ),
@@ -419,9 +485,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 Expanded(
                   child: DashboardCard(
                     title: 'Paid',
-                    value: CurrencyHelper.formatAmount(invoiceProvider.paidAmount),
+                    value: CurrencyHelper.formatAmount(metrics['paid'] ?? 0),
                     icon: Icons.check_circle,
-                    color: const Color(0xFF4CAF50),
+                    color: context.successColor,
                     onTap: () => _navigateToInvoices(),
                   ),
                 ),
@@ -488,7 +554,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withAlpha((255 * 0.04).round()),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -500,7 +566,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                color: Theme.of(context).colorScheme.primary.withAlpha((255 * 0.1).round()),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -532,9 +598,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildRecentInvoicesSection() {
-    return Consumer<InvoiceProvider>(
-      builder: (context, invoiceProvider, child) {
-        final recentInvoices = invoiceProvider.invoices.take(3).toList();
+    // Rebuild only when the first 3 invoices change
+    return Selector<EnhancedInvoiceProvider, List<Invoice>>(
+      selector: (_, provider) => provider.invoices.take(3).toList(),
+      builder: (context, recentInvoices, __) {
 
         if (recentInvoices.isEmpty) {
           return const SizedBox.shrink();
@@ -562,85 +629,85 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ...recentInvoices.map((invoice) => GestureDetector(
               onTap: () => _showInvoiceDetails(context, invoice),
               child: Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
                     color: Theme.of(context).colorScheme.outline,
-                    width: 1,
-                  ),
+                  width: 1,
                 ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: _getStatusColor(invoice.status).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        _getStatusIcon(invoice.status),
-                        color: _getStatusColor(invoice.status),
-                        size: 24,
-                      ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                        color: _getStatusColor(invoice.status).withAlpha((255 * 0.1).round()),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            invoice.invoiceNumber,
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            invoice.client.name,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
+                    child: Icon(
+                      _getStatusIcon(invoice.status),
+                      color: _getStatusColor(invoice.status),
+                      size: 24,
                     ),
-                    const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          CurrencyHelper.formatAmount(invoice.total),
+                          invoice.invoiceNumber,
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: _getStatusColor(invoice.status).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            _getStatusText(invoice.status),
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: _getStatusColor(invoice.status),
-                            ),
+                        Text(
+                          invoice.client.name,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
                     ),
-                  ],
+                  ),
+                    const SizedBox(width: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        CurrencyHelper.formatAmount(invoice.total),
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                            color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                            color: _getStatusColor(invoice.status).withAlpha((255 * 0.1).round()),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          _getStatusText(invoice.status),
+                          style: TextStyle(
+                              fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                              color: _getStatusColor(invoice.status),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 ),
               ),
-            )).toList(),
+            )),
           ],
         );
       },
@@ -673,9 +740,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   // Helper methods
   void _showOptionsMenu() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     showModalBottomSheet(
       context: context,
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -688,16 +758,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.outline,
+                color: colorScheme.outline.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             const SizedBox(height: 24),
             ListTile(
-              leading: Icon(Icons.settings, color: Theme.of(context).colorScheme.primary),
-              title: const Text(
+              leading: Icon(Icons.settings, color: colorScheme.primary),
+              title: Text(
                 'Settings',
-                style: TextStyle(fontWeight: FontWeight.w600),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface,
+                ),
               ),
               onTap: () {
                 Navigator.pop(context);
@@ -710,10 +783,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             const Divider(),
             ListTile(
-              leading: Icon(Icons.clear_all, color: Theme.of(context).colorScheme.error),
+              leading: Icon(Icons.clear_all, color: colorScheme.error),
               title: Text(
                 'Clear All Data',
-                style: TextStyle(color: Theme.of(context).colorScheme.error, fontWeight: FontWeight.w600),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: colorScheme.error, 
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               onTap: () {
                 Navigator.pop(context);
@@ -739,6 +815,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
           FilledButton(
             onPressed: () async {
+              // Pop the dialog before the async gap
               Navigator.of(context).pop();
               await _clearAllData();
             },
@@ -751,27 +828,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Future<void> _clearAllData() async {
-    try {
       final clientProvider = Provider.of<ClientProvider>(context, listen: false);
-      final invoiceProvider = Provider.of<InvoiceProvider>(context, listen: false);
+    final invoiceProvider = Provider.of<EnhancedInvoiceProvider>(context, listen: false);
+    final messenger = ScaffoldMessenger.of(context);
 
+    try {
       await invoiceProvider.clearAllInvoices();
       await clientProvider.clearAllClients();
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      if (!mounted) return;
+      messenger.showSnackBar(
           const SnackBar(
             content: Text('All data cleared successfully!'),
             backgroundColor: Colors.green,
           ),
         );
-      }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      if (!mounted) return;
+      messenger.showSnackBar(
           SnackBar(content: Text('Error clearing data: $e')),
         );
-      }
     }
   }
 
@@ -782,7 +858,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       case InvoiceStatus.sent:
         return Theme.of(context).colorScheme.primary;
       case InvoiceStatus.paid:
-        return AppColors.success;
+        return context.successColor;
       case InvoiceStatus.overdue:
         return Theme.of(context).colorScheme.error;
     }
@@ -816,16 +892,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   // Show invoice details modal (copied from invoice_list_screen.dart)
   void _showInvoiceDetails(BuildContext context, Invoice invoice) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(0.5),
+      barrierColor: Colors.black.withAlpha((255 * 0.5).round()),
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.85,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
           children: [
@@ -835,7 +914,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               width: 48,
               height: 4,
               decoration: BoxDecoration(
-                color: const Color(0xFFE0E0E0),
+                color: colorScheme.outline.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -848,8 +927,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Theme.of(context).colorScheme.primary.withOpacity(0.08),
-                    Theme.of(context).colorScheme.secondary.withOpacity(0.04),
+                    colorScheme.primary.withAlpha((255 * 0.08).round()),
+                    colorScheme.secondary.withAlpha((255 * 0.04).round()),
                   ],
                 ),
                 borderRadius: const BorderRadius.only(
@@ -862,12 +941,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
+                      color: colorScheme.primary,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
                       Icons.receipt_long,
-                      color: Colors.white,
+                      color: colorScheme.onPrimary,
                       size: 28,
                     ),
                   ),
@@ -878,17 +957,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       children: [
                         Text(
                           'Invoice Details',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF2D3748),
+                            color: colorScheme.onSurface,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           invoice.invoiceNumber,
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          style: theme.textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.w700,
-                            color: const Color(0xFF1A202C),
+                            color: colorScheme.onSurface,
                           ),
                         ),
                       ],
@@ -901,7 +980,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: _getStatusColor(invoice.status).withOpacity(0.3),
+                          color: _getStatusColor(invoice.status).withAlpha((255 * 0.3).round()),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -909,8 +988,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                     child: Text(
                       _getStatusText(invoice.status),
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: colorScheme.onPrimary,
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.5,
@@ -981,8 +1060,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                Theme.of(context).colorScheme.primary,
-                                Theme.of(context).colorScheme.secondary,
+                                colorScheme.primary,
+                                colorScheme.secondary,
                               ],
                             ),
                             borderRadius: BorderRadius.circular(12),
@@ -990,18 +1069,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
+                              Text(
                                 'Total Amount',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: colorScheme.onPrimary,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                               Text(
                                 CurrencyHelper.formatAmount(invoice.total),
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color: colorScheme.onPrimary,
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -1024,9 +1103,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF8F9FA),
+                            color: Theme.of(context).colorScheme.surfaceContainer,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFE9ECEF), width: 1),
+                            border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.2), width: 1),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1037,10 +1116,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   Expanded(
                                     child: Text(
                                       item.description,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontWeight: FontWeight.w600,
                                         fontSize: 15,
-                                        color: Color(0xFF2D3748),
+                                        color: Theme.of(context).colorScheme.onSurface,
                                       ),
                                     ),
                                   ),
@@ -1060,15 +1139,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: Colors.blue.withOpacity(0.1),
+                                      color: Theme.of(context).colorScheme.primary.withAlpha((255 * 0.1).round()),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
                                       'Qty: ${item.quantity}',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w500,
-                                        color: Colors.blue,
+                                        color: Theme.of(context).colorScheme.primary,
                                       ),
                                     ),
                                   ),
@@ -1076,15 +1155,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: Colors.green.withOpacity(0.1),
+                                      color: Theme.of(context).colorScheme.secondary.withAlpha((255 * 0.1).round()),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
                                       'Rate: ${CurrencyHelper.formatAmount(item.price)}',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w500,
-                                        color: Colors.green,
+                                        color: Theme.of(context).colorScheme.secondary,
                                       ),
                                     ),
                                   ),
@@ -1106,13 +1185,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 border: Border(
-                  top: BorderSide(color: const Color(0xFFE9ECEF), width: 1),
+                  top: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.2), width: 1),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Theme.of(context).colorScheme.shadow.withAlpha((255 * 0.05).round()),
                     blurRadius: 10,
                     offset: const Offset(0, -5),
                   ),
@@ -1156,7 +1235,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           icon: Icons.edit_outlined,
                           label: 'Edit Invoice',
                           onPressed: () => _editInvoice(context, invoice),
-                          color: const Color(0xFF3182CE),
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -1166,7 +1245,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           icon: Icons.delete_outline,
                           label: 'Delete',
                           onPressed: () => _deleteInvoice(context, invoice),
-                          color: const Color(0xFFE53E3E),
+                          color: Theme.of(context).colorScheme.error,
                         ),
                       ),
                     ],
@@ -1196,16 +1275,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   // Helper method to build info cards
   Widget _buildInfoCard(BuildContext context, String title, IconData icon, List<Widget> children) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE9ECEF), width: 1),
+        border: Border.all(color: colorScheme.outline.withOpacity(0.2), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: colorScheme.shadow.withAlpha((255 * 0.04).round()),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -1219,21 +1301,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  color: colorScheme.primary.withAlpha((255 * 0.1).round()),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   icon,
                   size: 20,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: colorScheme.primary,
                 ),
               ),
               const SizedBox(width: 12),
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF2D3748),
+                  color: colorScheme.onSurface,
                 ),
               ),
             ],
@@ -1268,13 +1350,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         style: ElevatedButton.styleFrom(
           backgroundColor: isPrimary 
               ? Theme.of(context).colorScheme.primary
-              : Colors.white,
+              : Theme.of(context).colorScheme.surface,
           foregroundColor: isPrimary 
-              ? Colors.white 
+              ? Theme.of(context).colorScheme.onPrimary 
               : Theme.of(context).colorScheme.primary,
           elevation: isPrimary ? 4 : 0,
           shadowColor: isPrimary 
-              ? Theme.of(context).colorScheme.primary.withOpacity(0.3)
+              ? Theme.of(context).colorScheme.primary.withAlpha((255 * 0.3).round())
               : null,
           side: isPrimary 
               ? null 
@@ -1309,8 +1391,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
         style: OutlinedButton.styleFrom(
           foregroundColor: color,
-          side: BorderSide(color: color.withOpacity(0.3), width: 1),
-          backgroundColor: color.withOpacity(0.05),
+          side: BorderSide(color: color.withAlpha((255 * 0.3).round()), width: 1),
+          backgroundColor: color.withAlpha((255 * 0.05).round()),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
@@ -1339,10 +1421,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF38A169),
+          backgroundColor: Colors.green, // Keep green for "paid" status consistency
           foregroundColor: Colors.white,
           elevation: 4,
-          shadowColor: const Color(0xFF38A169).withOpacity(0.3),
+          shadowColor: Colors.green.withAlpha((255 * 0.3).round()),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -1361,13 +1443,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Text(
             label,
             style: TextStyle(
-              color: Colors.grey[600],
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontWeight: isImportant ? FontWeight.bold : FontWeight.normal,
             ),
           ),
           Text(
             value,
-            style: TextStyle(
+            style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 14,
             ),
@@ -1379,50 +1461,56 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   // Action methods for invoice details modal
   void _shareInvoice(Invoice invoice) async {
+    final settingsProvider = Provider.of<SettingsProvider>(context, listen: false);
+    final messenger = ScaffoldMessenger.of(context);
     try {
-      final companySettings = Provider.of<SettingsProvider>(context, listen: false).companySettings;
-      await PDFService.shareInvoicePdf(invoice, companySettings);
+      await PDFService.shareInvoicePdf(invoice, settingsProvider.companySettings);
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error sharing invoice: $e')),
-        );
-      }
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text('Error sharing invoice: $e')),
+      );
     }
   }
 
   void _printInvoice(Invoice invoice) async {
+    final settingsProvider = Provider.of<SettingsProvider>(context, listen: false);
+    final messenger = ScaffoldMessenger.of(context);
     try {
-      final companySettings = Provider.of<SettingsProvider>(context, listen: false).companySettings;
-      await PDFService.printInvoicePdf(invoice, companySettings);
+      await PDFService.printInvoicePdf(invoice, settingsProvider.companySettings);
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error printing invoice: $e')),
-        );
-      }
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text('Error printing invoice: $e')),
+      );
     }
   }
 
   Future<void> _editInvoice(BuildContext context, Invoice invoice) async {
-    Navigator.of(context).pop(); // Close the modal first
+    final navigator = Navigator.of(context);
+    final provider = Provider.of<EnhancedInvoiceProvider>(context, listen: false);
+    // No async gap before using context
+    navigator.pop(); // Close the modal first
     
-    final result = await Navigator.of(context).push(
+    final result = await navigator.push(
       MaterialPageRoute(
         builder: (context) => InvoiceFormScreen(invoice: invoice),
       ),
     );
     
     if (result == true) {
+      if (!context.mounted) return;
       // Refresh the invoice list
-      if (context.mounted) {
-        Provider.of<InvoiceProvider>(context, listen: false).loadInvoices();
-      }
+      provider.loadInvoices();
     }
   }
 
   Future<void> _deleteInvoice(BuildContext context, Invoice invoice) async {
-    Navigator.of(context).pop(); // Close the modal first
+    final navigator = Navigator.of(context);
+    final provider = Provider.of<EnhancedInvoiceProvider>(context, listen: false);
+    final messenger = ScaffoldMessenger.of(context);
+    // No async gap before using context
+    navigator.pop(); // Close the modal first
     
     final confirmed = await showDialog<bool>(
       context: context,
@@ -1436,7 +1524,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
             child: const Text('Delete'),
           ),
         ],
@@ -1445,31 +1533,41 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     if (confirmed == true) {
       try {
-        await Provider.of<InvoiceProvider>(context, listen: false)
-            .deleteInvoice(invoice.id);
+        if (!context.mounted) return;
+        await provider.deleteInvoice(invoice.id);
         
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Invoice deleted successfully!')),
-          );
-        }
+        if (!context.mounted) return;
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Invoice deleted successfully!')),
+        );
       } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error deleting invoice: $e')),
-          );
-        }
+        if (!context.mounted) return;
+        messenger.showSnackBar(
+          SnackBar(content: Text('Error deleting invoice: $e')),
+        );
       }
     }
   }
 
   void _markAsPaid(BuildContext context, Invoice invoice) async {
-    final invoiceProvider = Provider.of<InvoiceProvider>(context, listen: false);
-    await invoiceProvider.markInvoiceAsPaid(invoice.id);
-    if (mounted) {
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
+    final invoiceProvider =
+        Provider.of<EnhancedInvoiceProvider>(context, listen: false);
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await invoiceProvider.updateInvoiceStatus(
+        invoice.id,
+        InvoiceStatus.paid,
+      );
+      if (!mounted) return;
+      navigator.pop();
+      messenger.showSnackBar(
         const SnackBar(content: Text('Invoice marked as paid')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text('Error marking as paid: $e')),
       );
     }
   }
@@ -1478,4 +1576,4 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
   }
-} 
+}

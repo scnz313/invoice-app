@@ -46,7 +46,7 @@ class _ClientListScreenState extends State<ClientListScreen> {
                   return const Center(child: CircularProgressIndicator());
                 }
 
-                List<Client> clients = _searchQuery.isEmpty 
+                List<Client> clients = _searchQuery.isEmpty
                     ? clientProvider.clients
                     : clientProvider.searchClients(_searchQuery);
 
@@ -58,23 +58,31 @@ class _ClientListScreenState extends State<ClientListScreen> {
                         Icon(
                           Icons.people,
                           size: 64,
-                          color: Colors.grey[400],
+                          // `withOpacity` is deprecated – replace with `withAlpha`
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withAlpha((255 * 0.4).round()),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           _searchQuery.isNotEmpty ? 'No clients found' : 'No clients yet',
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.grey[600],
-                          ),
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          _searchQuery.isNotEmpty 
+                          _searchQuery.isNotEmpty
                               ? 'Try adjusting your search'
                               : 'Add your first client to get started',
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[500],
-                          ),
+                                // Replace deprecated `withOpacity`
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withAlpha((255 * 0.6).round()),
+                              ),
                         ),
                       ],
                     ),
@@ -92,12 +100,12 @@ class _ClientListScreenState extends State<ClientListScreen> {
                         margin: const EdgeInsets.only(bottom: 8),
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: Colors.blue.withOpacity(0.1),
+                            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                             child: Text(
                               client.name.isNotEmpty ? client.name[0].toUpperCase() : 'C',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: Colors.blue,
+                                color: Theme.of(context).colorScheme.primary,
                               ),
                             ),
                           ),
@@ -113,7 +121,7 @@ class _ClientListScreenState extends State<ClientListScreen> {
                                 Text(
                                   client.phone,
                                   style: TextStyle(
-                                    color: Colors.grey[600],
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                                     fontSize: 12,
                                   ),
                                 ),
@@ -169,13 +177,13 @@ class _ClientListScreenState extends State<ClientListScreen> {
   }
 
   void _navigateToClientForm({Client? client}) async {
-    await Navigator.of(context).push(
+    final result = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => ClientFormScreen(client: client),
       ),
     );
-    // Refresh client list after returning
-    if (mounted) {
+    // Refresh client list after returning if a change was made
+    if (result == true && mounted) {
       Provider.of<ClientProvider>(context, listen: false).loadClients();
     }
   }
@@ -194,29 +202,45 @@ class _ClientListScreenState extends State<ClientListScreen> {
   }
 
   void _showDeleteDialog(Client client) {
+    // Capture the provider and messenger before the async gap.
+    final clientProvider = Provider.of<ClientProvider>(context, listen: false);
+    final messenger = ScaffoldMessenger.of(context);
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Delete Client'),
         content: Text('Are you sure you want to delete ${client.name}?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () async {
-              Navigator.of(context).pop();
-              await Provider.of<ClientProvider>(context, listen: false)
-                  .deleteClient(client.id);
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('${client.name} deleted')),
-                );
+              // Pop the dialog first.
+              Navigator.of(dialogContext).pop();
+              try {
+                await clientProvider.deleteClient(client.id);
+                // Now check if the state is still mounted before showing the snackbar.
+                if (mounted) {
+                  messenger.showSnackBar(
+                    SnackBar(content: Text('${client.name} deleted')),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  messenger.showSnackBar(
+                    SnackBar(content: Text('Failed to delete client: $e')),
+                  );
+                }
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
+            child: const Text('Delete'),
           ),
         ],
       ),
@@ -239,8 +263,8 @@ class _ClientListScreenState extends State<ClientListScreen> {
                 Text(
                   client.name,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 IconButton(
                   onPressed: () {
@@ -281,7 +305,7 @@ class _ClientListScreenState extends State<ClientListScreen> {
             child: Text(
               '$label:',
               style: TextStyle(
-                color: Colors.grey[600],
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -296,4 +320,4 @@ class _ClientListScreenState extends State<ClientListScreen> {
       ),
     );
   }
-} 
+}

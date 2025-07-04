@@ -1,4 +1,4 @@
-
+ 
 import 'package:flutter/services.dart';
 
 enum ValidationLevel { basic, strict, enterprise }

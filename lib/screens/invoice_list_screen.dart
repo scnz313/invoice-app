@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/invoice_provider.dart';
+import '../providers/enhanced_invoice_provider.dart';
 import '../providers/settings_provider.dart';
 import '../models/invoice.dart';
 import '../services/pdf_service.dart';
@@ -64,12 +64,14 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'delete',
-                      child: ListTile(
-                        leading: Icon(Icons.delete_outline, color: Colors.red),
-                        title: Text('Delete Selected', style: TextStyle(color: Colors.red)),
-                        contentPadding: EdgeInsets.zero,
+                      child: Builder(
+                        builder: (context) => ListTile(
+                          leading: Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
+                          title: Text('Delete Selected', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                          contentPadding: EdgeInsets.zero,
+                        ),
                       ),
                     ),
                   ],
@@ -80,36 +82,36 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                   icon: const Icon(Icons.file_download),
                   onPressed: () => _showExportDialog(),
                 ),
-                PopupMenuButton<InvoiceStatus?>(
-                  icon: const Icon(Icons.filter_list),
-                  onSelected: (status) {
-                    setState(() {
-                      _filterStatus = status;
-                    });
-                  },
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      value: null,
-                      child: Text('All Invoices'),
-                    ),
-                    const PopupMenuItem(
-                      value: InvoiceStatus.draft,
-                      child: Text('Draft'),
-                    ),
-                    const PopupMenuItem(
-                      value: InvoiceStatus.sent,
-                      child: Text('Sent'),
-                    ),
-                    const PopupMenuItem(
-                      value: InvoiceStatus.paid,
-                      child: Text('Paid'),
-                    ),
-                    const PopupMenuItem(
-                      value: InvoiceStatus.overdue,
-                      child: Text('Overdue'),
-                    ),
-                  ],
-                ),
+          PopupMenuButton<InvoiceStatus?>(
+            icon: const Icon(Icons.filter_list),
+            onSelected: (status) {
+              setState(() {
+                _filterStatus = status;
+              });
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: null,
+                child: Text('All Invoices'),
+              ),
+              const PopupMenuItem(
+                value: InvoiceStatus.draft,
+                child: Text('Draft'),
+              ),
+              const PopupMenuItem(
+                value: InvoiceStatus.sent,
+                child: Text('Sent'),
+              ),
+              const PopupMenuItem(
+                value: InvoiceStatus.paid,
+                child: Text('Paid'),
+              ),
+              const PopupMenuItem(
+                value: InvoiceStatus.overdue,
+                child: Text('Overdue'),
+              ),
+            ],
+          ),
                 PopupMenuButton<String>(
                   icon: const Icon(Icons.more_vert),
                   onSelected: (value) {
@@ -130,7 +132,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                     ),
                   ],
                 ),
-              ],
+        ],
       ),
       body: Column(
         children: [
@@ -150,7 +152,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
             ),
           ),
           Expanded(
-            child: Consumer<InvoiceProvider>(
+            child: Consumer<EnhancedInvoiceProvider>(
               builder: (context, invoiceProvider, child) {
                 if (invoiceProvider.isLoading) {
                   return const Center(child: CircularProgressIndicator());
@@ -176,7 +178,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                         Icon(
                           Icons.receipt_long,
                           size: 64,
-                          color: Colors.grey[400],
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         const SizedBox(height: 16),
                         Text(
@@ -184,7 +186,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                               ? 'No invoices found'
                               : 'No invoices yet',
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.grey[600],
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -193,7 +195,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                               ? 'Try adjusting your search or filter'
                               : 'Create your first invoice to get started',
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[500],
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -225,12 +227,12 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                                   },
                                 )
                               : CircleAvatar(
-                                  backgroundColor: _getStatusColor(invoice.status).withOpacity(0.1),
-                                  child: Icon(
-                                    _getStatusIcon(invoice.status),
-                                    color: _getStatusColor(invoice.status),
-                                  ),
-                                ),
+                                  backgroundColor: _getStatusColor(invoice.status).withAlpha((255 * 0.1).round()),
+                            child: Icon(
+                              _getStatusIcon(invoice.status),
+                              color: _getStatusColor(invoice.status),
+                            ),
+                          ),
                           title: Text(
                             invoice.invoiceNumber,
                             style: const TextStyle(fontWeight: FontWeight.bold),
@@ -242,7 +244,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                               Text(
                                 'Due: ${_formatDate(invoice.dueDate)}',
                                 style: TextStyle(
-                                  color: invoice.isOverdue ? Colors.red : Colors.grey[600],
+                                  color: invoice.isOverdue ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.onSurfaceVariant,
                                   fontSize: 12,
                                 ),
                               ),
@@ -262,7 +264,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: _getStatusColor(invoice.status).withOpacity(0.1),
+                                  color: _getStatusColor(invoice.status).withAlpha((255 * 0.1).round()),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
@@ -314,16 +316,19 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
   }
 
   void _showInvoiceDetails(BuildContext context, Invoice invoice) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(0.5),
+      barrierColor: theme.colorScheme.scrim.withAlpha((255 * 0.5).round()),
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.85,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
           children: [
@@ -333,7 +338,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
               width: 48,
               height: 4,
               decoration: BoxDecoration(
-                color: const Color(0xFFE0E0E0),
+                color: theme.colorScheme.outline.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -346,8 +351,8 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Theme.of(context).colorScheme.primary.withOpacity(0.08),
-                    Theme.of(context).colorScheme.secondary.withOpacity(0.04),
+                    Theme.of(context).colorScheme.primary.withAlpha((255 * 0.08).round()),
+                    Theme.of(context).colorScheme.secondary.withAlpha((255 * 0.04).round()),
                   ],
                 ),
                 borderRadius: const BorderRadius.only(
@@ -365,7 +370,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                     ),
                     child: Icon(
                       Icons.receipt_long,
-                      color: Colors.white,
+                      color: theme.colorScheme.onPrimary,
                       size: 28,
                     ),
                   ),
@@ -378,7 +383,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                           'Invoice Details',
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF2D3748),
+                            color: theme.colorScheme.onSurface,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -386,7 +391,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                           invoice.invoiceNumber,
                           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.w700,
-                            color: const Color(0xFF1A202C),
+                            color: theme.colorScheme.onSurface,
                           ),
                         ),
                       ],
@@ -399,7 +404,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: _getStatusColor(invoice.status).withOpacity(0.3),
+                          color: _getStatusColor(invoice.status).withAlpha((255 * 0.3).round()),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -488,18 +493,18 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
+                              Text(
                                 'Total Amount',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: theme.colorScheme.onPrimary,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                               Text(
                                 CurrencyHelper.formatInvoiceAmount(invoice.total),
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color: theme.colorScheme.onPrimary,
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -522,9 +527,9 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                           margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF8F9FA),
+                            color: Theme.of(context).colorScheme.surfaceContainer,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFE9ECEF), width: 1),
+                            border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.2), width: 1),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -535,10 +540,9 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                                   Expanded(
                                     child: Text(
                                       item.description,
-                                      style: const TextStyle(
+                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                         fontWeight: FontWeight.w600,
-                                        fontSize: 15,
-                                        color: Color(0xFF2D3748),
+                                        color: Theme.of(context).colorScheme.onSurface,
                                       ),
                                     ),
                                   ),
@@ -558,15 +562,14 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: Colors.blue.withOpacity(0.1),
+                                      color: Theme.of(context).colorScheme.primary.withAlpha((255 * 0.1).round()),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
                                       'Qty: ${item.quantity}',
-                                      style: const TextStyle(
-                                        fontSize: 12,
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                         fontWeight: FontWeight.w500,
-                                        color: Colors.blue,
+                                        color: Theme.of(context).colorScheme.primary,
                                       ),
                                     ),
                                   ),
@@ -574,15 +577,14 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: Colors.green.withOpacity(0.1),
+                                      color: Theme.of(context).colorScheme.secondary.withAlpha((255 * 0.1).round()),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
                                       'Rate: ${CurrencyHelper.formatInvoiceAmount(item.price)}',
-                                      style: const TextStyle(
-                                        fontSize: 12,
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                         fontWeight: FontWeight.w500,
-                                        color: Colors.green,
+                                        color: Theme.of(context).colorScheme.secondary,
                                       ),
                                     ),
                                   ),
@@ -604,13 +606,13 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.colorScheme.surface,
                 border: Border(
-                  top: BorderSide(color: const Color(0xFFE9ECEF), width: 1),
+                  top: BorderSide(color: theme.colorScheme.outline.withOpacity(0.2), width: 1),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: theme.colorScheme.shadow.withAlpha((255 * 0.05).round()),
                     blurRadius: 10,
                     offset: const Offset(0, -5),
                   ),
@@ -654,7 +656,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                           icon: Icons.edit_outlined,
                           label: 'Edit Invoice',
                           onPressed: () => _editInvoice(context, invoice),
-                          color: const Color(0xFF3182CE),
+                          color: theme.colorScheme.primary,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -664,7 +666,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                           icon: Icons.delete_outline,
                           label: 'Delete',
                           onPressed: () => _deleteInvoice(context, invoice),
-                          color: const Color(0xFFE53E3E),
+                          color: theme.colorScheme.error,
                         ),
                       ),
                     ],
@@ -693,16 +695,19 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
   }
 
   Widget _buildInfoCard(BuildContext context, String title, IconData icon, List<Widget> children) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE9ECEF), width: 1),
+        border: Border.all(color: colorScheme.outline.withOpacity(0.2), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: colorScheme.shadow.withAlpha((255 * 0.04).round()),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -716,21 +721,21 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  color: colorScheme.primary.withAlpha((255 * 0.1).round()),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   icon,
                   size: 20,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: colorScheme.primary,
                 ),
               ),
               const SizedBox(width: 12),
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF2D3748),
+                  color: colorScheme.onSurface,
                 ),
               ),
             ],
@@ -764,13 +769,13 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
         style: ElevatedButton.styleFrom(
           backgroundColor: isPrimary 
               ? Theme.of(context).colorScheme.primary
-              : Colors.white,
+              : Theme.of(context).colorScheme.surface,
           foregroundColor: isPrimary 
-              ? Colors.white 
+              ? Theme.of(context).colorScheme.onPrimary 
               : Theme.of(context).colorScheme.primary,
           elevation: isPrimary ? 4 : 0,
           shadowColor: isPrimary 
-              ? Theme.of(context).colorScheme.primary.withOpacity(0.3)
+              ? Theme.of(context).colorScheme.primary.withAlpha((255 * 0.3).round())
               : null,
           side: isPrimary 
               ? null 
@@ -804,8 +809,8 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
         ),
         style: OutlinedButton.styleFrom(
           foregroundColor: color,
-          side: BorderSide(color: color.withOpacity(0.3), width: 1),
-          backgroundColor: color.withOpacity(0.05),
+          side: BorderSide(color: color.withAlpha((255 * 0.3).round()), width: 1),
+          backgroundColor: color.withAlpha((255 * 0.05).round()),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
@@ -833,10 +838,10 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
           ),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF38A169),
-          foregroundColor: Colors.white,
+          backgroundColor: Theme.of(context).colorScheme.tertiary,
+          foregroundColor: Theme.of(context).colorScheme.onTertiary,
           elevation: 4,
-          shadowColor: const Color(0xFF38A169).withOpacity(0.3),
+          shadowColor: Theme.of(context).colorScheme.tertiary.withAlpha((255 * 0.3).round()),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -853,16 +858,16 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
         children: [
           Text(
             label,
-            style: TextStyle(
-              color: Colors.grey[600],
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontWeight: isImportant ? FontWeight.bold : FontWeight.normal,
             ),
           ),
           Text(
             value,
-            style: TextStyle(
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              fontSize: 14,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],
@@ -871,12 +876,13 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
   }
 
   void _shareInvoice(Invoice invoice) async {
+    final settingsProvider = Provider.of<SettingsProvider>(context, listen: false);
+    final messenger = ScaffoldMessenger.of(context);
     try {
-      final companySettings = Provider.of<SettingsProvider>(context, listen: false).companySettings;
-      await PDFService.shareInvoicePdf(invoice, companySettings);
+      await PDFService.shareInvoicePdf(invoice, settingsProvider.companySettings);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(content: Text('Error sharing invoice: $e')),
         );
       }
@@ -884,12 +890,13 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
   }
 
   void _printInvoice(Invoice invoice) async {
+    final settingsProvider = Provider.of<SettingsProvider>(context, listen: false);
+    final messenger = ScaffoldMessenger.of(context);
     try {
-      final companySettings = Provider.of<SettingsProvider>(context, listen: false).companySettings;
-      await PDFService.printInvoicePdf(invoice, companySettings);
+      await PDFService.printInvoicePdf(invoice, settingsProvider.companySettings);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(content: Text('Error printing invoice: $e')),
         );
       }
@@ -897,9 +904,11 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
   }
 
   Future<void> _editInvoice(BuildContext context, Invoice invoice) async {
-    Navigator.of(context).pop(); // Close the modal first
+    final navigator = Navigator.of(context);
+    final provider = Provider.of<EnhancedInvoiceProvider>(context, listen: false);
+    navigator.pop(); // Close the modal first
     
-    final result = await Navigator.of(context).push(
+    final result = await navigator.push(
       MaterialPageRoute(
         builder: (context) => InvoiceFormScreen(invoice: invoice),
       ),
@@ -907,14 +916,17 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
     
     if (result == true) {
       // Refresh the invoice list
-      if (context.mounted) {
-        Provider.of<InvoiceProvider>(context, listen: false).loadInvoices();
+      if (mounted) {
+        provider.loadInvoices();
       }
     }
   }
 
   Future<void> _deleteInvoice(BuildContext context, Invoice invoice) async {
-    Navigator.of(context).pop(); // Close the modal first
+    final navigator = Navigator.of(context);
+    final provider = Provider.of<EnhancedInvoiceProvider>(context, listen: false);
+    final messenger = ScaffoldMessenger.of(context);
+    navigator.pop(); // Close the modal first
     
     final confirmed = await showDialog<bool>(
       context: context,
@@ -928,7 +940,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
             child: const Text('Delete'),
           ),
         ],
@@ -937,17 +949,16 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
 
     if (confirmed == true) {
       try {
-        await Provider.of<InvoiceProvider>(context, listen: false)
-            .deleteInvoice(invoice.id);
+        await provider.deleteInvoice(invoice.id);
         
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+        if (mounted) {
+          messenger.showSnackBar(
             const SnackBar(content: Text('Invoice deleted successfully!')),
           );
         }
       } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+        if (mounted) {
+          messenger.showSnackBar(
             SnackBar(content: Text('Error deleting invoice: $e')),
           );
         }
@@ -956,26 +967,37 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
   }
 
   void _markAsPaid(BuildContext context, Invoice invoice) async {
-    final invoiceProvider = Provider.of<InvoiceProvider>(context, listen: false);
-    await invoiceProvider.markInvoiceAsPaid(invoice.id);
+    final invoiceProvider = Provider.of<EnhancedInvoiceProvider>(context, listen: false);
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await invoiceProvider.updateInvoiceStatus(invoice.id, InvoiceStatus.paid);
     if (mounted) {
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
+        navigator.pop();
+        messenger.showSnackBar(
         const SnackBar(content: Text('Invoice marked as paid')),
       );
+      }
+    } catch (e) {
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(content: Text('Error marking as paid: $e')),
+        );
+      }
     }
   }
 
   Color _getStatusColor(InvoiceStatus status) {
+    final colorScheme = Theme.of(context).colorScheme;
     switch (status) {
       case InvoiceStatus.draft:
-        return Colors.grey;
+        return colorScheme.outline;
       case InvoiceStatus.sent:
-        return Colors.blue;
+        return colorScheme.primary;
       case InvoiceStatus.paid:
-        return Colors.green;
+        return Colors.green; // Keep green for paid status for consistency
       case InvoiceStatus.overdue:
-        return Colors.red;
+        return colorScheme.error;
     }
   }
 
@@ -1011,7 +1033,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
 
   // Selection and Bulk Operations
   void _selectAllInvoices() {
-    final invoiceProvider = Provider.of<InvoiceProvider>(context, listen: false);
+    final invoiceProvider = Provider.of<EnhancedInvoiceProvider>(context, listen: false);
     final filteredInvoices = _getFilteredInvoices(invoiceProvider.invoices);
     setState(() {
       _selectedInvoiceIds = filteredInvoices.map((invoice) => invoice.id).toSet();
@@ -1020,8 +1042,6 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
 
   void _handleBulkAction(String action) async {
     if (_selectedInvoiceIds.isEmpty) return;
-
-    final invoiceProvider = Provider.of<InvoiceProvider>(context, listen: false);
     
     switch (action) {
       case 'mark_paid':
@@ -1032,27 +1052,33 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
         break;
     }
     
-    setState(() {
-      _isSelectionMode = false;
-      _selectedInvoiceIds.clear();
-    });
+    if (mounted) {
+      setState(() {
+        _isSelectionMode = false;
+        _selectedInvoiceIds.clear();
+      });
+    }
   }
 
   Future<void> _bulkMarkAsPaid() async {
-    final invoiceProvider = Provider.of<InvoiceProvider>(context, listen: false);
+    final invoiceProvider = Provider.of<EnhancedInvoiceProvider>(context, listen: false);
+    final messenger = ScaffoldMessenger.of(context);
     
     for (final invoiceId in _selectedInvoiceIds) {
-      await invoiceProvider.markInvoiceAsPaid(invoiceId);
+      await invoiceProvider.updateInvoiceStatus(invoiceId, InvoiceStatus.paid);
     }
     
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(content: Text('${_selectedInvoiceIds.length} invoices marked as paid')),
       );
     }
   }
 
   Future<void> _bulkDelete() async {
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -1065,7 +1091,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
             child: const Text('Delete'),
           ),
         ],
@@ -1073,14 +1099,14 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
     );
 
     if (confirmed == true) {
-      final invoiceProvider = Provider.of<InvoiceProvider>(context, listen: false);
+      final invoiceProvider = Provider.of<EnhancedInvoiceProvider>(context, listen: false);
       
       for (final invoiceId in _selectedInvoiceIds) {
         await invoiceProvider.deleteInvoice(invoiceId);
       }
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(content: Text('${_selectedInvoiceIds.length} invoices deleted')),
         );
       }
@@ -1089,15 +1115,18 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
 
   // Export Dialog
   void _showExportDialog() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.7,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
           children: [
@@ -1107,7 +1136,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
               width: 48,
               height: 4,
               decoration: BoxDecoration(
-                color: const Color(0xFFE0E0E0),
+                color: colorScheme.outline.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -1120,12 +1149,12 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                      color: colorScheme.primary.withAlpha((255 * 0.1).round()),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
                       Icons.file_download,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: colorScheme.primary,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -1133,19 +1162,19 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Export Invoices',
-                          style: TextStyle(
-                            fontSize: 20,
+                          style: theme.textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                         Text(
                           _isSelectionMode 
                               ? '${_selectedInvoiceIds.length} invoices selected'
                               : 'Export all invoices',
-                          style: TextStyle(
-                            color: Colors.grey[600],
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -1204,36 +1233,56 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
     required String subtitle,
     required VoidCallback onTap,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey[300]!),
+        border: Border.all(color: colorScheme.outline.withOpacity(0.3)),
         borderRadius: BorderRadius.circular(12),
+        color: colorScheme.surfaceContainerLow,
       ),
       child: ListTile(
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            color: colorScheme.primary.withAlpha((255 * 0.1).round()),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
             icon,
-            color: Theme.of(context).colorScheme.primary,
+            color: colorScheme.primary,
           ),
         ),
         title: Text(
           title,
-          style: const TextStyle(fontWeight: FontWeight.w600),
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: colorScheme.onSurface,
+          ),
         ),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        subtitle: Text(
+          subtitle,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
+        trailing: Icon(
+          Icons.arrow_forward_ios, 
+          size: 16,
+          color: colorScheme.onSurfaceVariant,
+        ),
         onTap: onTap,
       ),
     );
   }
 
   Future<void> _exportInvoices(ExportFormat format) async {
-    Navigator.pop(context); // Close the export dialog
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final invoiceProvider = Provider.of<EnhancedInvoiceProvider>(context, listen: false);
+
+    navigator.pop(); // Close the export dialog
     
     try {
       // Show loading indicator
@@ -1251,7 +1300,6 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
         ),
       );
 
-      final invoiceProvider = Provider.of<InvoiceProvider>(context, listen: false);
       final allInvoices = invoiceProvider.invoices;
       
       // Get invoices to export
@@ -1272,10 +1320,12 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
       );
 
       // Hide loading indicator
-      if (mounted) Navigator.pop(context);
+      if (!navigator.mounted) return;
+      navigator.pop();
 
       if (result.success) {
         // Show success message and offer to share
+        if (!navigator.mounted) return;
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
@@ -1299,18 +1349,18 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
         );
       } else {
         // Show error message
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+        if (messenger.mounted) {
+          messenger.showSnackBar(
             SnackBar(content: Text('Export failed: ${result.errorMessage}')),
           );
         }
       }
     } catch (e) {
       // Hide loading indicator
-      if (mounted) Navigator.pop(context);
+      if (navigator.mounted) navigator.pop();
       
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      if (messenger.mounted) {
+        messenger.showSnackBar(
           SnackBar(content: Text('Export error: $e')),
         );
       }
@@ -1335,4 +1385,4 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
 
     return filtered;
   }
-} 
+}

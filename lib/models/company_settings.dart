@@ -11,6 +11,7 @@ class CompanySettings {
   final String bankName;
   final String bankAccount;
   final String bankIFSC;
+  final String? logoPath; // Path to the company logo image
 
   CompanySettings({
     required this.name,
@@ -20,6 +21,7 @@ class CompanySettings {
     required this.bankName,
     required this.bankAccount,
     required this.bankIFSC,
+    this.logoPath,
   });
 
   factory CompanySettings.fromJson(Map<String, dynamic> json) =>
@@ -35,6 +37,7 @@ class CompanySettings {
     String? bankName,
     String? bankAccount,
     String? bankIFSC,
+    String? logoPath,
   }) {
     return CompanySettings(
       name: name ?? this.name,
@@ -44,6 +47,7 @@ class CompanySettings {
       bankName: bankName ?? this.bankName,
       bankAccount: bankAccount ?? this.bankAccount,
       bankIFSC: bankIFSC ?? this.bankIFSC,
+      logoPath: logoPath ?? this.logoPath,
     );
   }
 
@@ -55,5 +59,6 @@ class CompanySettings {
     bankName: 'Your Bank Name',
     bankAccount: '1234567890123456',
     bankIFSC: 'YOURBANK123',
+    logoPath: null,
   );
 } 

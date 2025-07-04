@@ -15,6 +15,7 @@ CompanySettings _$CompanySettingsFromJson(Map<String, dynamic> json) =>
       bankName: json['bankName'] as String,
       bankAccount: json['bankAccount'] as String,
       bankIFSC: json['bankIFSC'] as String,
+      logoPath: json['logoPath'] as String?,
     );
 
 Map<String, dynamic> _$CompanySettingsToJson(CompanySettings instance) =>
@@ -26,4 +27,5 @@ Map<String, dynamic> _$CompanySettingsToJson(CompanySettings instance) =>
       'bankName': instance.bankName,
       'bankAccount': instance.bankAccount,
       'bankIFSC': instance.bankIFSC,
+      'logoPath': instance.logoPath,
     };

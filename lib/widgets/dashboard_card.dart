@@ -79,7 +79,7 @@ class _DashboardCardState extends State<DashboardCard>
               button: widget.onTap != null,
               label: '${widget.title}: ${widget.value}',
               hint: widget.onTap != null ? 'Tap to view details' : null,
-              child: Container(
+            child: Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
@@ -147,8 +147,8 @@ class _DashboardCardState extends State<DashboardCard>
                   ),
                 ],
               ),
+              ),
             ),
-          ),
           ),
         );
       },

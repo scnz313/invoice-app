@@ -10,6 +10,8 @@ import 'package:share_plus/share_plus.dart';
 import '../models/invoice.dart';
 import '../models/company_settings.dart';
 import '../utils/currency_helper.dart';
+import '../utils/logger.dart';
+import 'image_service.dart';
 
 class PDFService {
   static final PDFService _instance = PDFService._internal();
@@ -26,6 +28,9 @@ class PDFService {
   static pw.ImageProvider? _logoImage;
   static bool _logoLoaded = false;
 
+  // Image service for logo management
+  final ImageService _imageService = ImageService();
+
   // PDF generation settings for optimization
   static const int _maxItemsPerPage = 25;
   static const double _compressionLevel = 0.8;
@@ -41,17 +46,17 @@ class PDFService {
       _regularFont = await PdfGoogleFonts.notoSansRegular();
       _boldFont = await PdfGoogleFonts.notoSansBold();
       _fontsLoaded = true;
-      debugPrint('PDF fonts loaded successfully: Noto Sans');
+      Logger.debug('PDF fonts loaded successfully: Noto Sans', 'PDFService');
     } catch (e) {
-      debugPrint('Failed to load Noto fonts, trying Roboto: $e');
+      Logger.warning('Failed to load Noto fonts, trying Roboto: $e', 'PDFService');
       try {
         // Fallback to other Unicode-supporting fonts
         _regularFont = await PdfGoogleFonts.robotoRegular();
         _boldFont = await PdfGoogleFonts.robotoBold();
         _fontsLoaded = true;
-        debugPrint('PDF fonts loaded successfully: Roboto');
+        Logger.debug('PDF fonts loaded successfully: Roboto', 'PDFService');
       } catch (e2) {
-        debugPrint('Failed to load Google fonts, using system defaults: $e2');
+        Logger.warning('Failed to load Google fonts, using system defaults: $e2', 'PDFService');
         // Continue with system fonts - they may have limited Unicode support
         _fontsLoaded = true;
       }
@@ -60,17 +65,51 @@ class PDFService {
     }
   }
 
-  Future<void> _loadLogo() async {
+  Future<void> _loadDefaultLogo() async {
     if (_logoLoaded) return;
     
     try {
       final logoBytes = await rootBundle.load('assets/images/app_logo.png');
       _logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
       _logoLoaded = true;
-      debugPrint('App logo loaded successfully for PDF');
+      Logger.debug('Default app logo loaded successfully for PDF', 'PDFService');
     } catch (e) {
-      debugPrint('Failed to load app logo: $e');
+      Logger.warning('Failed to load default app logo: $e', 'PDFService');
       // Logo will fall back to text placeholder
+    }
+  }
+
+  /// Load company logo from settings, fallback to default logo
+  Future<pw.ImageProvider?> _loadCompanyLogo(CompanySettings companySettings) async {
+    try {
+      Logger.debug('Loading company logo for PDF...', 'PDFService');
+      
+      // First try to load company logo if available
+      if (companySettings.logoPath != null && companySettings.logoPath!.isNotEmpty) {
+        Logger.debug('Company logo path found: ${companySettings.logoPath}', 'PDFService');
+        final logoBytes = await _imageService.loadImageAsBytes(companySettings.logoPath!);
+        if (logoBytes != null) {
+          Logger.info('Company logo loaded successfully for PDF (${logoBytes.length} bytes)', 'PDFService');
+          return pw.MemoryImage(logoBytes);
+        } else {
+          Logger.warning('Failed to load company logo bytes from path: ${companySettings.logoPath}', 'PDFService');
+        }
+      } else {
+        Logger.debug('No company logo path set, will use default or placeholder', 'PDFService');
+      }
+      
+      // Fallback to default logo
+      await _loadDefaultLogo();
+      if (_logoImage != null) {
+        Logger.debug('Using default app logo for PDF', 'PDFService');
+      } else {
+        Logger.debug('No default logo available, will show placeholder', 'PDFService');
+      }
+      return _logoImage;
+    } catch (e) {
+      Logger.warning('Failed to load company logo, using default: $e', 'PDFService');
+      await _loadDefaultLogo();
+      return _logoImage;
     }
   }
 
@@ -84,7 +123,6 @@ class PDFService {
       _validateInputData(invoice, companySettings);
       
       await _loadFonts();
-      await _loadLogo();
 
       final pdf = pw.Document(
         compress: true,
@@ -96,9 +134,9 @@ class PDFService {
       );
 
       // Build pages - split into multiple pages if needed
-      final pages = _buildPages(invoice, companySettings);
-      for (final pageBuilder in pages) {
-        pdf.addPage(pageBuilder);
+      final pages = await _buildPagesAsync(invoice, companySettings);
+      for (final page in pages) {
+        pdf.addPage(page);
       }
 
       // Save PDF with optimized settings
@@ -107,17 +145,16 @@ class PDFService {
       
       // Validate PDF size (warn if too large)
       if (pdfBytes.length > 5 * 1024 * 1024) { // 5MB
-        debugPrint('Warning: Generated PDF is large (${(pdfBytes.length / 1024 / 1024).toStringAsFixed(1)}MB)');
+        Logger.warning('Generated PDF is large (${(pdfBytes.length / 1024 / 1024).toStringAsFixed(1)}MB)', 'PDFService');
       }
       
       final file = File(fileName);
       await file.writeAsBytes(pdfBytes);
       
-      debugPrint('PDF generated successfully: $fileName (${(pdfBytes.length / 1024).toStringAsFixed(1)}KB)');
+      Logger.info('PDF generated successfully: $fileName (${(pdfBytes.length / 1024).toStringAsFixed(1)}KB)', 'PDFService');
       return fileName;
     } catch (e, stackTrace) {
-      debugPrint('PDF generation error: $e');
-      debugPrint('Stack trace: $stackTrace');
+      Logger.error('PDF generation error', 'PDFService', e, stackTrace);
       throw Exception('Failed to generate PDF: ${e.toString()}');
     }
   }
@@ -134,22 +171,28 @@ class PDFService {
     }
   }
 
-  List<pw.Page> _buildPages(Invoice invoice, CompanySettings companySettings) {
+  Future<List<pw.Page>> _buildPagesAsync(Invoice invoice, CompanySettings companySettings) async {
     final pages = <pw.Page>[];
+    
+    // Load the main page content
+    final mainPageContent = await _buildMainPageAsync(invoice, companySettings);
     
     // For now, single page layout
     pages.add(
       pw.Page(
         pageFormat: _pageFormat,
         margin: _pageMargins,
-        build: (context) => _buildMainPage(invoice, companySettings),
+        build: (context) => mainPageContent,
       ),
     );
     
     return pages;
   }
 
-  pw.Widget _buildMainPage(Invoice invoice, CompanySettings companySettings) {
+  Future<pw.Widget> _buildMainPageAsync(Invoice invoice, CompanySettings companySettings) async {
+    // Load the company logo first
+    final companyLogo = await _loadCompanyLogo(companySettings);
+    
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -158,7 +201,7 @@ class PDFService {
         pw.SizedBox(height: 16),
         
         // Company information section
-        _buildEnhancedCompanySection(companySettings),
+        _buildEnhancedCompanySection(companySettings, companyLogo),
         pw.SizedBox(height: 16),
         
         // Bill To and Invoice details section
@@ -221,7 +264,7 @@ class PDFService {
     );
   }
 
-  pw.Widget _buildEnhancedCompanySection(CompanySettings companySettings) {
+  pw.Widget _buildEnhancedCompanySection(CompanySettings companySettings, [pw.ImageProvider? logo]) {
     return pw.Container(
       decoration: pw.BoxDecoration(
         border: pw.Border.all(color: PdfColors.black, width: 1.5),
@@ -229,8 +272,8 @@ class PDFService {
       ),
       child: pw.Row(
         children: [
-          // Enhanced logo section
-          _buildLogoSection(),
+          // Enhanced logo section with dynamic logo
+          _buildLogoSection(logo),
           
           // Enhanced company details
           pw.Expanded(
@@ -241,7 +284,10 @@ class PDFService {
     );
   }
 
-  pw.Widget _buildLogoSection() {
+  pw.Widget _buildLogoSection([pw.ImageProvider? logo]) {
+    // Use provided logo, or fall back to static _logoImage, or show placeholder
+    final logoToUse = logo ?? _logoImage;
+    
     return pw.Container(
       width: 90,
       height: 70,
@@ -257,13 +303,13 @@ class PDFService {
           ),
         ],
       ),
-      child: _logoImage != null
+      child: logoToUse != null
           ? pw.Container(
               decoration: pw.BoxDecoration(
                 borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
               ),
               child: pw.Image(
-                _logoImage!,
+                logoToUse,
                 fit: pw.BoxFit.contain,
                 width: 90,
                 height: 70,
@@ -998,11 +1044,14 @@ class PDFService {
         title: 'Invoice ${invoice.invoiceNumber}',
       );
       
+      // Load the main page content with logo
+      final mainPageContent = await _buildMainPageAsync(invoice, settings);
+      
       pdf.addPage(
         pw.Page(
           pageFormat: _pageFormat,
           margin: _pageMargins,
-          build: (context) => _buildMainPage(invoice, settings),
+          build: (context) => mainPageContent,
         ),
       );
       
@@ -1011,22 +1060,21 @@ class PDFService {
         name: 'Invoice ${invoice.invoiceNumber}',
       );
     } catch (e, stackTrace) {
-      debugPrint('Print error: $e');
-      debugPrint('Stack trace: $stackTrace');
+      Logger.error('Print error', 'PDFService', e, stackTrace);
       throw Exception('Failed to print invoice: ${e.toString()}');
     }
   }
 
   Future<void> shareInvoice(Invoice invoice, CompanySettings settings) async {
     try {
-      debugPrint('Starting PDF sharing process...');
+      Logger.debug('Starting PDF sharing process...', 'PDFService');
       
       final fileName = await generateInvoicePDF(
         invoice: invoice, 
         companySettings: settings,
       );
       
-      debugPrint('PDF file generated at: $fileName');
+      Logger.debug('PDF file generated at: $fileName', 'PDFService');
       
       // Verify file exists and is readable
       final file = File(fileName);
@@ -1035,7 +1083,7 @@ class PDFService {
       }
       
       final fileSize = await file.length();
-      debugPrint('PDF file size: ${fileSize} bytes');
+      Logger.debug('PDF file size: ${fileSize} bytes', 'PDFService');
       
       if (fileSize == 0) {
         throw Exception('Generated PDF file is empty');
@@ -1044,7 +1092,7 @@ class PDFService {
       // Use share_plus package instead of Printing.sharePdf for better cross-platform support
       final xFile = XFile(fileName);
       
-      debugPrint('Sharing PDF using share_plus...');
+      Logger.debug('Sharing PDF using share_plus...', 'PDFService');
       
       await Share.shareXFiles(
         [xFile],
@@ -1052,10 +1100,9 @@ class PDFService {
         text: 'Please find attached invoice ${invoice.invoiceNumber} from ${settings.name.isNotEmpty ? settings.name : 'Your Company'}.',
       );
       
-      debugPrint('PDF sharing completed successfully');
+      Logger.info('PDF sharing completed successfully', 'PDFService');
     } catch (e, stackTrace) {
-      debugPrint('Share error: $e');
-      debugPrint('Stack trace: $stackTrace');
+      Logger.error('Share error', 'PDFService', e, stackTrace);
       throw Exception('Failed to share invoice: ${e.toString()}');
     }
   }
@@ -1063,7 +1110,7 @@ class PDFService {
   // Alternative sharing method using Printing.sharePdf as fallback
   Future<void> shareInvoiceUsingPrinting(Invoice invoice, CompanySettings settings) async {
     try {
-      debugPrint('Using Printing.sharePdf as fallback...');
+      Logger.debug('Using Printing.sharePdf as fallback...', 'PDFService');
       
       final fileName = await generateInvoicePDF(
         invoice: invoice, 
@@ -1076,8 +1123,7 @@ class PDFService {
         subject: 'Invoice ${invoice.invoiceNumber}',
       );
     } catch (e, stackTrace) {
-      debugPrint('Printing share error: $e');
-      debugPrint('Stack trace: $stackTrace');
+      Logger.error('Printing share error', 'PDFService', e, stackTrace);
       throw Exception('Failed to share invoice using printing package: ${e.toString()}');
     }
   }
@@ -1088,7 +1134,7 @@ class PDFService {
     String? generatedFilePath;
     
     try {
-      debugPrint('Starting PDF sharing process...');
+      Logger.debug('Starting PDF sharing process...', 'PDFService');
       
       // Clean up old PDF files first (keep only latest 5 files)
       await _cleanupOldPdfFiles();
@@ -1099,7 +1145,7 @@ class PDFService {
         companySettings: settings,
       );
       
-      debugPrint('PDF file generated at: $generatedFilePath');
+      Logger.debug('PDF file generated at: $generatedFilePath', 'PDFService');
       
       // Verify file exists and is readable
       final file = File(generatedFilePath);
@@ -1108,7 +1154,7 @@ class PDFService {
       }
       
       final fileSize = await file.length();
-      debugPrint('PDF file size: ${fileSize} bytes');
+      Logger.debug('PDF file size: ${fileSize} bytes', 'PDFService');
       
       if (fileSize == 0) {
         throw Exception('Generated PDF file is empty');
@@ -1116,7 +1162,7 @@ class PDFService {
       
       // Try primary method using share_plus
       try {
-        debugPrint('Sharing PDF using share_plus...');
+        Logger.debug('Sharing PDF using share_plus...', 'PDFService');
         
         final xFile = XFile(generatedFilePath);
         await Share.shareXFiles(
@@ -1125,16 +1171,16 @@ class PDFService {
           text: 'Please find attached invoice ${invoice.invoiceNumber} from ${settings.name.isNotEmpty ? settings.name : 'Your Company'}.',
         );
         
-        debugPrint('PDF sharing completed successfully');
+        Logger.info('PDF sharing completed successfully', 'PDFService');
         return;
       } catch (e) {
-        debugPrint('Primary share method failed: $e');
+        Logger.warning('Primary share method failed: $e', 'PDFService');
         lastError = Exception('Primary share failed: $e');
       }
       
       // Try fallback method using Printing package with existing file
       try {
-        debugPrint('Using Printing.sharePdf as fallback...');
+        Logger.debug('Using Printing.sharePdf as fallback...', 'PDFService');
         
         await Printing.sharePdf(
           bytes: await file.readAsBytes(),
@@ -1142,16 +1188,15 @@ class PDFService {
           subject: 'Invoice ${invoice.invoiceNumber}',
         );
         
-        debugPrint('PDF sharing completed successfully using fallback');
+        Logger.info('PDF sharing completed successfully using fallback', 'PDFService');
         return;
       } catch (e) {
-        debugPrint('Fallback share method failed: $e');
+        Logger.warning('Fallback share method failed: $e', 'PDFService');
         lastError = Exception('All share methods failed. Last error: $e');
       }
       
     } catch (e, stackTrace) {
-      debugPrint('PDF generation or sharing error: $e');
-      debugPrint('Stack trace: $stackTrace');
+      Logger.error('PDF generation or sharing error', 'PDFService', e, stackTrace);
       lastError = Exception('Failed to generate or share invoice: ${e.toString()}');
     }
     
@@ -1177,14 +1222,14 @@ class PDFService {
         for (final file in filesToDelete) {
           try {
             await file.delete();
-            debugPrint('Cleaned up old PDF file: ${file.path}');
+            Logger.debug('Cleaned up old PDF file: ${file.path}', 'PDFService');
           } catch (e) {
-            debugPrint('Failed to delete old PDF file: ${file.path}, error: $e');
+            Logger.warning('Failed to delete old PDF file: ${file.path}, error: $e', 'PDFService');
           }
         }
       }
     } catch (e) {
-      debugPrint('Error during PDF cleanup: $e');
+      Logger.warning('Error during PDF cleanup: $e', 'PDFService');
       // Don't throw error, cleanup is not critical
     }
   }

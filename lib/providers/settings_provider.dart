@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/company_settings.dart';
+import '../utils/logger.dart';
 
 class SettingsProvider with ChangeNotifier {
   CompanySettings _companySettings = CompanySettings.defaultSettings;
@@ -25,9 +26,7 @@ class SettingsProvider with ChangeNotifier {
         _companySettings = CompanySettings.fromJson(json.decode(settingsJson));
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('Error loading settings: $e');
-      }
+      Logger.error('Error loading settings', 'SettingsProvider', e);
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -41,9 +40,7 @@ class SettingsProvider with ChangeNotifier {
       final settingsJson = json.encode(_companySettings.toJson());
       await prefs.setString(_storageKey, settingsJson);
     } catch (e) {
-      if (kDebugMode) {
-        print('Error saving settings: $e');
-      }
+      Logger.error('Error saving settings', 'SettingsProvider', e);
     }
   }
 

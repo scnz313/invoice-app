@@ -175,11 +175,11 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black12,
             blurRadius: 4,
-            offset: const Offset(0, -2),
+            offset: Offset(0, -2),
           ),
         ],
       ),
@@ -220,13 +220,14 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
       _isLoading = true;
     });
 
-    try {
-      final clientProvider = Provider.of<ClientProvider>(context, listen: false);
+    final clientProvider = Provider.of<ClientProvider>(context, listen: false);
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
 
+    try {
       if (widget.client == null) {
-        // Create new client
-        final client = Client(
-          id: '',
+        // Create new client using the factory constructor
+        final client = Client.create(
           name: _nameController.text.trim(),
           email: _emailController.text.trim(),
           phone: _phoneController.text.trim(),
@@ -236,10 +237,10 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
         await clientProvider.addClient(client);
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          messenger.showSnackBar(
             const SnackBar(content: Text('Client added successfully!')),
           );
-          Navigator.of(context).pop(true);
+          navigator.pop(true);
         }
       } else {
         // Update existing client
@@ -253,15 +254,15 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
         await clientProvider.updateClient(updatedClient);
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          messenger.showSnackBar(
             const SnackBar(content: Text('Client updated successfully!')),
           );
-          Navigator.of(context).pop(true);
+          navigator.pop(true);
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(content: Text('Error saving client: $e')),
         );
       }
@@ -277,6 +278,11 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
   Future<void> _deleteClient() async {
     if (widget.client == null) return;
 
+    // Capture context-dependent objects before the async gap.
+    final clientProvider = Provider.of<ClientProvider>(context, listen: false);
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -289,7 +295,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+                          style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
             child: const Text('Delete'),
           ),
         ],
@@ -298,22 +304,21 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
 
     if (confirmed == true) {
       try {
-        await Provider.of<ClientProvider>(context, listen: false)
-            .deleteClient(widget.client!.id);
+        await clientProvider.deleteClient(widget.client!.id);
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          messenger.showSnackBar(
             const SnackBar(content: Text('Client deleted successfully!')),
           );
-          Navigator.of(context).pop(true);
+          navigator.pop(true);
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          messenger.showSnackBar(
             SnackBar(content: Text('Error deleting client: $e')),
           );
         }
       }
     }
   }
-} 
+}
