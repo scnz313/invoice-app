@@ -7,8 +7,11 @@ import 'providers/settings_provider.dart';
 import 'providers/theme_provider.dart';
 import 'services/feature_flags.dart';
 import 'theme/app_theme.dart';
+import 'screens/welcome_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/client_form_screen.dart';
+import 'screens/category_selection_screen.dart';
+import 'screens/business_setup_screen.dart';
 import 'utils/logger.dart';
 
 // Utility function to clear all app data
@@ -71,15 +74,17 @@ class InvoiceApp extends StatelessWidget {
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
           return MaterialApp(
-            title: 'Invoice Manager',
+            title: 'Invoice',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: themeProvider.themeMode,
             home: const AppInitializer(),
             routes: {
+              '/welcome': (context) => const WelcomeScreen(),
               '/home': (context) => const HomeScreen(),
               '/add-client': (context) => const ClientFormScreen(),
+              '/category-selection': (context) => const CategorySelectionScreen(),
             },
           );
         },
@@ -270,7 +275,15 @@ class _AppInitializerState extends State<AppInitializer> {
       );
     }
     
-    return const HomeScreen();
+    // Check if user has completed onboarding
+    final settingsProvider = context.read<SettingsProvider>();
+    final hasCompletedOnboarding = settingsProvider.hasCompletedOnboarding;
+    
+    if (hasCompletedOnboarding) {
+      return const HomeScreen();
+    } else {
+      return const WelcomeScreen();
+    }
   }
 }
 
