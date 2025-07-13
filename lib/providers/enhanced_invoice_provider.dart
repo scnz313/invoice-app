@@ -1,840 +1,637 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import '../models/invoice.dart';
-import '../models/client.dart';
-import '../utils/validation_helper.dart';
+import 'package:uuid/uuid.dart';
+import '../models/enhanced_invoice.dart';
+import '../models/business_category.dart';
+import '../services/database_service.dart';
 import '../utils/logger.dart';
 
-enum LoadingState { idle, loading, success, error }
+class EnhancedInvoiceProvider with ChangeNotifier {
+  final DatabaseService _databaseService = DatabaseService();
+  final Uuid _uuid = const Uuid();
 
-enum SyncStatus { synced, pending, failed, offline }
+  List<EnhancedInvoice> _invoices = [];
+  List<Customer> _customers = [];
+  List<Product> _products = [];
+  BusinessSettings? _businessSettings;
+  bool _isLoading = false;
+  String? _error;
 
-class InvoiceState {
-  final List<Invoice> invoices;
-  final LoadingState loadingState;
-  final String? errorMessage;
-  final List<Invoice> pendingInvoices; // For offline support
-  final Map<String, SyncStatus> syncStatuses;
-  final bool isOffline;
+  // Getters
+  List<EnhancedInvoice> get invoices => _invoices;
+  List<Customer> get customers => _customers;
+  List<Product> get products => _products;
+  BusinessSettings? get businessSettings => _businessSettings;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
-  const InvoiceState({
-    this.invoices = const [],
-    this.loadingState = LoadingState.idle,
-    this.errorMessage,
-    this.pendingInvoices = const [],
-    this.syncStatuses = const {},
-    this.isOffline = false,
-  });
+  // Initialize the provider
+  Future<void> initialize() async {
+    try {
+      _setLoading(true);
+      await Future.wait([
+        loadInvoices(),
+        loadCustomers(),
+        loadProducts(),
+        loadBusinessSettings(),
+      ]);
+      _setError(null);
+    } catch (e) {
+      Logger.error('Failed to initialize EnhancedInvoiceProvider', 'EnhancedInvoiceProvider', e);
+      _setError('Failed to initialize: $e');
+    } finally {
+      _setLoading(false);
+    }
+  }
 
-  InvoiceState copyWith({
-    List<Invoice>? invoices,
-    LoadingState? loadingState,
-    String? errorMessage,
-    List<Invoice>? pendingInvoices,
-    Map<String, SyncStatus>? syncStatuses,
-    bool? isOffline,
+  // Invoice operations
+  Future<void> loadInvoices() async {
+    try {
+      _invoices = await _databaseService.getAllInvoices();
+      notifyListeners();
+    } catch (e) {
+      Logger.error('Failed to load invoices', 'EnhancedInvoiceProvider', e);
+      rethrow;
+    }
+  }
+
+  Future<void> addInvoice(EnhancedInvoice invoice) async {
+    try {
+      await _databaseService.insertInvoice(invoice);
+      _invoices.insert(0, invoice);
+      notifyListeners();
+    } catch (e) {
+      Logger.error('Failed to add invoice', 'EnhancedInvoiceProvider', e);
+      rethrow;
+    }
+  }
+
+  Future<void> updateInvoice(EnhancedInvoice invoice) async {
+    try {
+      await _databaseService.updateInvoice(invoice);
+      final index = _invoices.indexWhere((i) => i.id == invoice.id);
+      if (index != -1) {
+        _invoices[index] = invoice;
+        notifyListeners();
+      }
+    } catch (e) {
+      Logger.error('Failed to update invoice', 'EnhancedInvoiceProvider', e);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteInvoice(String id) async {
+    try {
+      await _databaseService.deleteInvoice(id);
+      _invoices.removeWhere((invoice) => invoice.id == id);
+      notifyListeners();
+    } catch (e) {
+      Logger.error('Failed to delete invoice', 'EnhancedInvoiceProvider', e);
+      rethrow;
+    }
+  }
+
+  Future<EnhancedInvoice?> getInvoiceById(String id) async {
+    try {
+      return await _databaseService.getInvoiceById(id);
+    } catch (e) {
+      Logger.error('Failed to get invoice by id', 'EnhancedInvoiceProvider', e);
+      rethrow;
+    }
+  }
+
+  // Customer operations
+  Future<void> loadCustomers() async {
+    try {
+      _customers = await _databaseService.getAllCustomers();
+      notifyListeners();
+    } catch (e) {
+      Logger.error('Failed to load customers', 'EnhancedInvoiceProvider', e);
+      rethrow;
+    }
+  }
+
+  Future<void> addCustomer(Customer customer) async {
+    try {
+      await _databaseService.insertCustomer(customer);
+      _customers.add(customer);
+      _customers.sort((a, b) => a.name.compareTo(b.name));
+      notifyListeners();
+    } catch (e) {
+      Logger.error('Failed to add customer', 'EnhancedInvoiceProvider', e);
+      rethrow;
+    }
+  }
+
+  Future<void> updateCustomer(Customer customer) async {
+    try {
+      await _databaseService.updateCustomer(customer);
+      final index = _customers.indexWhere((c) => c.id == customer.id);
+      if (index != -1) {
+        _customers[index] = customer;
+        _customers.sort((a, b) => a.name.compareTo(b.name));
+        notifyListeners();
+      }
+    } catch (e) {
+      Logger.error('Failed to update customer', 'EnhancedInvoiceProvider', e);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteCustomer(String id) async {
+    try {
+      await _databaseService.deleteCustomer(id);
+      _customers.removeWhere((customer) => customer.id == id);
+      notifyListeners();
+    } catch (e) {
+      Logger.error('Failed to delete customer', 'EnhancedInvoiceProvider', e);
+      rethrow;
+    }
+  }
+
+  // Product operations
+  Future<void> loadProducts() async {
+    try {
+      _products = await _databaseService.getAllProducts();
+      notifyListeners();
+    } catch (e) {
+      Logger.error('Failed to load products', 'EnhancedInvoiceProvider', e);
+      rethrow;
+    }
+  }
+
+  Future<void> addProduct(Product product) async {
+    try {
+      await _databaseService.insertProduct(product);
+      _products.add(product);
+      _products.sort((a, b) => a.name.compareTo(b.name));
+      notifyListeners();
+    } catch (e) {
+      Logger.error('Failed to add product', 'EnhancedInvoiceProvider', e);
+      rethrow;
+    }
+  }
+
+  List<Product> getProductsByCategory(BusinessCategory category) {
+    return _products.where((product) => product.category == category).toList();
+  }
+
+  // Business settings operations
+  Future<void> loadBusinessSettings() async {
+    try {
+      _businessSettings = await _databaseService.getBusinessSettings();
+      notifyListeners();
+    } catch (e) {
+      Logger.error('Failed to load business settings', 'EnhancedInvoiceProvider', e);
+      rethrow;
+    }
+  }
+
+  Future<void> saveBusinessSettings(BusinessSettings settings) async {
+    try {
+      await _databaseService.saveBusinessSettings(settings);
+      _businessSettings = settings;
+      notifyListeners();
+    } catch (e) {
+      Logger.error('Failed to save business settings', 'EnhancedInvoiceProvider', e);
+      rethrow;
+    }
+  }
+
+  // Invoice creation helpers
+  String generateInvoiceNumber() {
+    final prefix = _businessSettings?.invoicePrefix ?? 'INV';
+    final date = DateTime.now();
+    final year = date.year.toString().substring(2);
+    final month = date.month.toString().padLeft(2, '0');
+    final count = _invoices.where((i) => 
+      i.createdAt.year == date.year && i.createdAt.month == date.month
+    ).length + 1;
+    
+    return '$prefix$year$month${count.toString().padLeft(3, '0')}';
+  }
+
+  EnhancedInvoice createDraftInvoice({
+    required BusinessCategory category,
+    required Customer customer,
+    List<InvoiceItem>? items,
+    List<CategorySpecificField>? categoryFields,
   }) {
-    return InvoiceState(
-      invoices: invoices ?? this.invoices,
-      loadingState: loadingState ?? this.loadingState,
-      errorMessage: errorMessage,
-      pendingInvoices: pendingInvoices ?? this.pendingInvoices,
-      syncStatuses: syncStatuses ?? this.syncStatuses,
-      isOffline: isOffline ?? this.isOffline,
+    final now = DateTime.now();
+    final dueDate = now.add(const Duration(days: 30));
+    
+    return EnhancedInvoice(
+      id: _uuid.v4(),
+      invoiceNumber: generateInvoiceNumber(),
+      businessCategory: category,
+      createdAt: now,
+      dueDate: dueDate,
+      status: InvoiceStatus.draft,
+      customer: customer,
+      items: items ?? [],
+      categoryFields: categoryFields ?? CategoryFieldDefinitions.getFieldsForCategory(category),
+      totals: InvoiceTotals(
+        subtotal: 0.0,
+        discountTotal: 0.0,
+        taxableAmount: 0.0,
+        taxTotal: 0.0,
+        grandTotal: 0.0,
+        currency: _businessSettings?.currency ?? 'INR',
+      ),
+      paymentDetails: PaymentDetails(
+        method: PaymentMethod.cash,
+        status: PaymentStatus.pending,
+      ),
     );
   }
 
-  bool get isLoading => loadingState == LoadingState.loading;
-  bool get hasError => loadingState == LoadingState.error;
-  bool get isSuccess => loadingState == LoadingState.success;
-  bool get hasPendingSync => pendingInvoices.isNotEmpty;
-}
+  InvoiceItem createInvoiceItem({
+    required String name,
+    String? description,
+    required double quantity,
+    required String unit,
+    required double unitPrice,
+    double discount = 0.0,
+    double? taxRate,
+    required BusinessCategory category,
+    Map<String, dynamic>? metadata,
+  }) {
+    return InvoiceItem(
+      id: _uuid.v4(),
+      name: name,
+      description: description,
+      quantity: quantity,
+      unit: unit,
+      unitPrice: unitPrice,
+      discount: discount,
+      taxRate: taxRate ?? category.defaultTaxRate,
+      categoryFields: CategoryFieldDefinitions.getFieldsForCategory(category),
+      metadata: metadata,
+    );
+  }
 
-class EnhancedInvoiceProvider extends ChangeNotifier {
-  InvoiceState _state = const InvoiceState();
-  final ValidationHelper _validator = ValidationHelper();
-  late SharedPreferences _prefs;
-  bool _isInitialized = false;
+  Customer createCustomer({
+    required String name,
+    String? email,
+    String? phone,
+    String? address,
+    String? gstNumber,
+    CustomerType type = CustomerType.individual,
+    Map<String, dynamic>? categorySpecificData,
+  }) {
+    return Customer(
+      id: _uuid.v4(),
+      name: name,
+      email: email,
+      phone: phone,
+      address: address,
+      gstNumber: gstNumber,
+      type: type,
+      categorySpecificData: categorySpecificData,
+    );
+  }
 
-  // Getters
-  InvoiceState get state => _state;
-  List<Invoice> get invoices => _state.invoices;
-  LoadingState get loadingState => _state.loadingState;
-  String? get errorMessage => _state.errorMessage;
-  bool get isLoading => _state.isLoading;
-  bool get hasError => _state.hasError;
-  bool get isOffline => _state.isOffline;
-  bool get hasPendingSync => _state.hasPendingSync;
+  Product createProduct({
+    required String name,
+    String? description,
+    required BusinessCategory category,
+    required String unit,
+    required double unitPrice,
+    double? taxRate,
+    Map<String, dynamic>? metadata,
+  }) {
+    return Product(
+      id: _uuid.v4(),
+      name: name,
+      description: description,
+      category: category,
+      unit: unit,
+      unitPrice: unitPrice,
+      taxRate: taxRate ?? category.defaultTaxRate,
+      categoryFields: CategoryFieldDefinitions.getFieldsForCategory(category),
+      metadata: metadata,
+    );
+  }
 
-  // Statistics
-  int get totalInvoices => _state.invoices.length;
-  double get totalAmount => _state.invoices.fold(0.0, (sum, invoice) => sum + invoice.total);
-  double get paidAmount => _state.invoices
-      .where((invoice) => invoice.status == InvoiceStatus.paid)
-      .fold(0.0, (sum, invoice) => sum + invoice.total);
-  double get pendingAmount => _state.invoices
-      .where((invoice) => invoice.status != InvoiceStatus.paid)
-      .fold(0.0, (sum, invoice) => sum + invoice.total);
-  int get overdueCount => _state.invoices
-      .where((invoice) => invoice.isOverdue)
-      .length;
+  // Calculation helpers
+  InvoiceTotals calculateTotals(List<InvoiceItem> items) {
+    double subtotal = 0.0;
+    double discountTotal = 0.0;
+    double taxableAmount = 0.0;
+    double taxTotal = 0.0;
 
-  // Filtered lists
-  List<Invoice> get draftInvoices => _state.invoices
-      .where((invoice) => invoice.status == InvoiceStatus.draft)
-      .toList();
-  
-  List<Invoice> get sentInvoices => _state.invoices
-      .where((invoice) => invoice.status == InvoiceStatus.sent)
-      .toList();
-  
-  List<Invoice> get paidInvoices => _state.invoices
-      .where((invoice) => invoice.status == InvoiceStatus.paid)
-      .toList();
-  
-  List<Invoice> get overdueInvoices => _state.invoices
-      .where((invoice) => invoice.isOverdue)
-      .toList();
-
-  Future<void> initialize() async {
-    if (_isInitialized) return;
-    
-    try {
-      _prefs = await SharedPreferences.getInstance();
-      _isInitialized = true;
-      
-      // Set up connectivity monitoring
-      _setupConnectivityMonitoring();
-      
-      // Load invoices without calling initialize again
-      await _loadInvoicesInternal();
-      
-      // Sync pending changes if online
-      if (!_state.isOffline) {
-        await _syncPendingChanges();
-      }
-    } catch (e) {
-      _updateState(_state.copyWith(
-        loadingState: LoadingState.error,
-        errorMessage: 'Failed to initialize: $e',
-      ));
+    for (var item in items) {
+      subtotal += item.subtotal;
+      discountTotal += item.discountAmount;
+      taxableAmount += item.taxableAmount;
+      taxTotal += item.taxAmount;
     }
+
+    return InvoiceTotals(
+      subtotal: subtotal,
+      discountTotal: discountTotal,
+      taxableAmount: taxableAmount,
+      taxTotal: taxTotal,
+      grandTotal: taxableAmount + taxTotal,
+      currency: _businessSettings?.currency ?? 'INR',
+    );
   }
 
-  Future<void> _loadInvoicesInternal() async {
-    try {
-      // Don't update loading state during initialization to avoid setState during build
-      // Get data with additional error handling for corrupted data
-      List<String> invoicesJson;
-      List<String> pendingJson;
-      
-      try {
-        invoicesJson = _prefs.getStringList('invoices') ?? [];
-      } catch (e) {
-        Logger.warning('Error loading invoices list: $e - Clearing corrupted data', 'InvoiceProvider');
-        await _prefs.remove('invoices');
-        invoicesJson = [];
-      }
-      
-      try {
-        pendingJson = _prefs.getStringList('pending_invoices') ?? [];
-      } catch (e) {
-        Logger.warning('Error loading pending invoices list: $e - Clearing corrupted data', 'InvoiceProvider');
-        await _prefs.remove('pending_invoices');
-        pendingJson = [];
-      }
-
-      // Data migration logic (same as before)
-      List<String> _migrateIfNecessary(List<String> raw) {
-        if (raw.length == 1) {
-          try {
-            final decoded = jsonDecode(raw.first);
-            if (decoded is List) {
-              final normalized = decoded
-                  .map((e) => json.encode(e))
-                  .cast<String>()
-                  .toList();
-              return normalized;
-            }
-          } catch (_) {
-            // ignore – fallback to current raw list
-          }
-        }
-        return raw;
-      }
-
-      final normalizedInvoicesJson = _migrateIfNecessary(invoicesJson);
-      final normalizedPendingJson = _migrateIfNecessary(pendingJson);
-
-      // Persist back if migration occurred
-      if (normalizedInvoicesJson.length != invoicesJson.length) {
-        await _prefs.setStringList('invoices', normalizedInvoicesJson);
-      }
-      if (normalizedPendingJson.length != pendingJson.length) {
-        await _prefs.setStringList('pending_invoices', normalizedPendingJson);
-      }
-
-      // Parse invoices with robust error handling
-      final invoices = <Invoice>[];
-      for (final jsonString in normalizedInvoicesJson) {
-        try {
-          final invoice = Invoice.fromJson(jsonDecode(jsonString));
-          invoices.add(invoice);
-        } catch (e) {
-          Logger.warning('Error parsing invoice JSON: $e - Skipping corrupted invoice', 'InvoiceProvider');
-          // Continue with other invoices instead of crashing
-        }
-      }
-
-      // Parse pending invoices with robust error handling
-      final pendingInvoices = <Invoice>[];
-      for (final jsonString in normalizedPendingJson) {
-        try {
-          final invoice = Invoice.fromJson(jsonDecode(jsonString));
-          pendingInvoices.add(invoice);
-        } catch (e) {
-          Logger.warning('Error parsing pending invoice JSON: $e - Skipping corrupted invoice', 'InvoiceProvider');
-          // Continue with other invoices instead of crashing
-        }
-             }
-       
-       // Load sync statuses with error handling
-       Map<String, SyncStatus> syncStatuses = {};
-       try {
-         final syncStatusesJson = _prefs.getString('sync_statuses') ?? '{}';
-         syncStatuses = Map<String, SyncStatus>.from(
-           jsonDecode(syncStatusesJson).map((key, value) => 
-             MapEntry(key, SyncStatus.values[value])
-           )
-         );
-       } catch (e) {
-         Logger.warning('Error loading sync statuses: $e - Using empty map', 'InvoiceProvider');
-         await _prefs.remove('sync_statuses');
-         syncStatuses = {};
-       }
-      
-      _updateState(_state.copyWith(
-        invoices: invoices,
-        pendingInvoices: pendingInvoices,
-        syncStatuses: syncStatuses,
-        loadingState: LoadingState.success,
-        errorMessage: null,
-      ));
-    } catch (e) {
-      _updateState(_state.copyWith(
-        loadingState: LoadingState.error,
-        errorMessage: 'Failed to load invoices: $e',
-      ));
-      rethrow;
-    }
-  }
-
-  void _setupConnectivityMonitoring() {
-    Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-      final isOffline = result == ConnectivityResult.none;
-      if (isOffline != _state.isOffline) {
-        _updateState(_state.copyWith(isOffline: isOffline));
-        
-        // Auto-sync when coming back online
-        if (!isOffline && _state.hasPendingSync) {
-          _syncPendingChanges();
-        }
-      }
-    });
-  }
-
-  Future<void> loadInvoices() async {
-    if (!_isInitialized) await initialize();
-    
-    try {
-      // Only update loading state if not already loading to avoid setState during build
-      if (_state.loadingState != LoadingState.loading) {
-        _updateState(_state.copyWith(loadingState: LoadingState.loading));
-      }
-      
-      final invoicesJson = _prefs.getStringList('invoices') ?? [];
-      final pendingJson = _prefs.getStringList('pending_invoices') ?? [];
-
-      // ------------------------------------------------------------------
-      // Data-migration: Earlier versions stored the **entire list** of
-      // invoices as ONE encoded JSON string inside the StringList. When
-      // we decode such an element we get `List<dynamic>` instead of the
-      // expected `Map<String,dynamic>` which causes the
-      // `type 'String' is not a subtype of type 'List<dynamic>?'` crash.
-      //
-      // Detect that condition and explode the single element into the
-      // new canonical format of List<String> (each element = one invoice
-      // json-encoded map).  The same logic is applied to pending invoices.
-      // ------------------------------------------------------------------
-      List<String> _migrateIfNecessary(List<String> raw) {
-        if (raw.length == 1) {
-          try {
-            final decoded = jsonDecode(raw.first);
-            if (decoded is List) {
-              // old format detected – convert
-              final normalized = decoded
-                  .map((e) => json.encode(e))
-                  .cast<String>()
-                  .toList();
-              return normalized;
-            }
-          } catch (_) {
-            // ignore – fallback to current raw list
-          }
-        }
-        return raw;
-      }
-
-      final normalizedInvoicesJson = _migrateIfNecessary(invoicesJson);
-      final normalizedPendingJson = _migrateIfNecessary(pendingJson);
-
-      // Persist back if migration occurred
-      if (normalizedInvoicesJson.length != invoicesJson.length) {
-        await _prefs.setStringList('invoices', normalizedInvoicesJson);
-      }
-      if (normalizedPendingJson.length != pendingJson.length) {
-        await _prefs.setStringList('pending_invoices', normalizedPendingJson);
-      }
-
-      final invoices = normalizedInvoicesJson
-          .map((j) => Invoice.fromJson(jsonDecode(j)))
-          .toList();
-
-      final pendingInvoices = normalizedPendingJson
-          .map((j) => Invoice.fromJson(jsonDecode(j)))
-          .toList();
-      
-      // Load sync statuses
-      final syncStatusesJson = _prefs.getString('sync_statuses') ?? '{}';
-      final syncStatuses = Map<String, SyncStatus>.from(
-        jsonDecode(syncStatusesJson).map((key, value) => 
-          MapEntry(key, SyncStatus.values[value])
-        )
-      );
-      
-      _updateState(_state.copyWith(
-        invoices: invoices,
-        pendingInvoices: pendingInvoices,
-        syncStatuses: syncStatuses,
-        loadingState: LoadingState.success,
-        errorMessage: null,
-      ));
-    } catch (e) {
-      _updateState(_state.copyWith(
-        loadingState: LoadingState.error,
-        errorMessage: 'Failed to load invoices: $e',
-      ));
-      rethrow;
-    }
-  }
-
-  Future<void> addInvoice(Invoice invoice, {bool optimistic = true}) async {
-    try {
-      // Validate invoice data
-      final validationResult = _validateInvoice(invoice);
-      if (!validationResult.isValid) {
-        throw ValidationException(validationResult.errorMessage ?? 'Invalid invoice data');
-      }
-
-      if (optimistic) {
-        // Optimistic update - add to UI immediately
-        final updatedInvoices = [..._state.invoices, invoice];
-        _updateState(_state.copyWith(invoices: updatedInvoices));
-      }
-
-      if (_state.isOffline) {
-        // Add to pending queue for offline support
-        await _addToPendingQueue(invoice, 'create');
-      } else {
-        // Save directly
-        await _saveInvoice(invoice);
-        _updateSyncStatus(invoice.id, SyncStatus.synced);
-      }
-    } catch (e) {
-      if (optimistic) {
-        // Revert optimistic update
-        await loadInvoices();
-      }
-      
-      _updateState(_state.copyWith(
-        loadingState: LoadingState.error,
-        errorMessage: 'Failed to add invoice: $e',
-      ));
-      rethrow;
-    }
-  }
-
-  Future<void> updateInvoice(Invoice invoice, {bool optimistic = true}) async {
-    try {
-      // Validate invoice data
-      final validationResult = _validateInvoice(invoice);
-      if (!validationResult.isValid) {
-        throw ValidationException(validationResult.errorMessage ?? 'Invalid invoice data');
-      }
-
-      if (optimistic) {
-        // Optimistic update
-        final updatedInvoices = _state.invoices.map((inv) => 
-          inv.id == invoice.id ? invoice : inv
-        ).toList();
-        _updateState(_state.copyWith(invoices: updatedInvoices));
-      }
-
-      if (_state.isOffline) {
-        await _addToPendingQueue(invoice, 'update');
-      } else {
-        await _saveInvoice(invoice);
-        _updateSyncStatus(invoice.id, SyncStatus.synced);
-      }
-    } catch (e) {
-      if (optimistic) {
-        await loadInvoices();
-      }
-      
-      _updateState(_state.copyWith(
-        loadingState: LoadingState.error,
-        errorMessage: 'Failed to update invoice: $e',
-      ));
-      rethrow;
-    }
-  }
-
-  Future<void> deleteInvoice(String invoiceId, {bool optimistic = true}) async {
-    try {
-      Invoice? deletedInvoice;
-      
-      if (optimistic) {
-        // Find and remove invoice optimistically
-        deletedInvoice = _state.invoices.firstWhere((inv) => inv.id == invoiceId);
-        final updatedInvoices = _state.invoices.where((inv) => inv.id != invoiceId).toList();
-        _updateState(_state.copyWith(invoices: updatedInvoices));
-      }
-
-      if (_state.isOffline) {
-        await _addToPendingQueue(deletedInvoice ?? Invoice.create(
-          client: Client.empty(),
-          items: [],
-          dueDate: DateTime.now(),
-        ), 'delete');
-      } else {
-        await _removeInvoice(invoiceId);
-        _removeSyncStatus(invoiceId);
-      }
-    } catch (e) {
-      if (optimistic) {
-        await loadInvoices();
-      }
-      
-      _updateState(_state.copyWith(
-        loadingState: LoadingState.error,
-        errorMessage: 'Failed to delete invoice: $e',
-      ));
-      rethrow;
-    }
-  }
-
-  Future<void> updateInvoiceStatus(String invoiceId, InvoiceStatus status) async {
-    try {
-      final invoice = _state.invoices.firstWhere((inv) => inv.id == invoiceId);
-      final updatedInvoice = invoice.copyWith(status: status);
-      await updateInvoice(updatedInvoice);
-    } catch (e) {
-      _updateState(_state.copyWith(
-        loadingState: LoadingState.error,
-        errorMessage: 'Failed to update invoice status: $e',
-      ));
-      rethrow;
-    }
-  }
-
-  Future<void> duplicateInvoice(String invoiceId) async {
-    try {
-      final originalInvoice = _state.invoices.firstWhere((inv) => inv.id == invoiceId);
-      final duplicatedInvoice = Invoice.create(
-        client: originalInvoice.client,
-        items: originalInvoice.items,
-        dueDate: DateTime.now().add(const Duration(days: 30)),
-        taxPercentage: originalInvoice.taxPercentage,
-        discountAmount: originalInvoice.discountAmount,
-        notes: originalInvoice.notes,
-      );
-      
-      await addInvoice(duplicatedInvoice);
-    } catch (e) {
-      _updateState(_state.copyWith(
-        loadingState: LoadingState.error,
-        errorMessage: 'Failed to duplicate invoice: $e',
-      ));
-      rethrow;
-    }
-  }
-
-  // Search and filtering
-  List<Invoice> searchInvoices(String query) {
-    if (query.isEmpty) return _state.invoices;
+  // Search and filter methods
+  List<EnhancedInvoice> searchInvoices(String query) {
+    if (query.isEmpty) return _invoices;
     
     final lowercaseQuery = query.toLowerCase();
-    return _state.invoices.where((invoice) =>
-      invoice.invoiceNumber.toLowerCase().contains(lowercaseQuery) ||
-      invoice.client.name.toLowerCase().contains(lowercaseQuery) ||
-      invoice.client.email.toLowerCase().contains(lowercaseQuery) ||
-      invoice.notes.toLowerCase().contains(lowercaseQuery)
-    ).toList();
+    return _invoices.where((invoice) {
+      return invoice.invoiceNumber.toLowerCase().contains(lowercaseQuery) ||
+             invoice.customer.name.toLowerCase().contains(lowercaseQuery) ||
+             invoice.customer.email?.toLowerCase().contains(lowercaseQuery) == true ||
+             invoice.customer.phone?.contains(query) == true;
+    }).toList();
   }
 
-  List<Invoice> filterInvoicesByStatus(List<InvoiceStatus> statuses) {
-    return _state.invoices.where((invoice) => statuses.contains(invoice.status)).toList();
+  List<EnhancedInvoice> filterInvoicesByStatus(InvoiceStatus status) {
+    return _invoices.where((invoice) => invoice.status == status).toList();
   }
 
-  List<Invoice> filterInvoicesByDateRange(DateTime startDate, DateTime endDate) {
-    return _state.invoices.where((invoice) => 
-      invoice.createdDate.isAfter(startDate.subtract(const Duration(days: 1))) &&
-      invoice.createdDate.isBefore(endDate.add(const Duration(days: 1)))
-    ).toList();
+  List<EnhancedInvoice> filterInvoicesByDateRange(DateTime start, DateTime end) {
+    return _invoices.where((invoice) {
+      return invoice.createdAt.isAfter(start) && invoice.createdAt.isBefore(end);
+    }).toList();
   }
 
-  List<Invoice> filterInvoicesByAmountRange(double minAmount, double maxAmount) {
-    return _state.invoices.where((invoice) => 
-      invoice.total >= minAmount && invoice.total <= maxAmount
-    ).toList();
-  }
-
-  // Sorting
-  List<Invoice> sortInvoices(InvoiceSortBy sortBy, {bool ascending = true}) {
-    final sorted = [..._state.invoices];
+  List<Customer> searchCustomers(String query) {
+    if (query.isEmpty) return _customers;
     
-    sorted.sort((a, b) {
-      int comparison;
-      switch (sortBy) {
-        case InvoiceSortBy.invoiceNumber:
-          comparison = a.invoiceNumber.compareTo(b.invoiceNumber);
-          break;
-        case InvoiceSortBy.clientName:
-          comparison = a.client.name.compareTo(b.client.name);
-          break;
-        case InvoiceSortBy.amount:
-          comparison = a.total.compareTo(b.total);
-          break;
-        case InvoiceSortBy.date:
-          comparison = a.createdDate.compareTo(b.createdDate);
-          break;
-        case InvoiceSortBy.dueDate:
-          comparison = a.dueDate.compareTo(b.dueDate);
-          break;
-        case InvoiceSortBy.status:
-          comparison = a.status.index.compareTo(b.status.index);
-          break;
-      }
-      return ascending ? comparison : -comparison;
-    });
-    
-    return sorted;
+    final lowercaseQuery = query.toLowerCase();
+    return _customers.where((customer) {
+      return customer.name.toLowerCase().contains(lowercaseQuery) ||
+             customer.email?.toLowerCase().contains(lowercaseQuery) == true ||
+             customer.phone?.contains(query) == true;
+    }).toList();
   }
 
-  // Bulk operations
-  Future<void> bulkUpdateStatus(List<String> invoiceIds, InvoiceStatus status) async {
+  List<Product> searchProducts(String query) {
+    if (query.isEmpty) return _products;
+    
+    final lowercaseQuery = query.toLowerCase();
+    return _products.where((product) {
+      return product.name.toLowerCase().contains(lowercaseQuery) ||
+             product.description?.toLowerCase().contains(lowercaseQuery) == true;
+    }).toList();
+  }
+
+  // Analytics methods
+  Future<Map<String, dynamic>> getInvoiceStats() async {
     try {
-      _updateState(_state.copyWith(loadingState: LoadingState.loading));
-      
-      for (final id in invoiceIds) {
-        await updateInvoiceStatus(id, status);
-      }
-      
-      _updateState(_state.copyWith(loadingState: LoadingState.success));
+      return await _databaseService.getInvoiceStats();
     } catch (e) {
-      _updateState(_state.copyWith(
-        loadingState: LoadingState.error,
-        errorMessage: 'Failed to bulk update invoices: $e',
-      ));
+      Logger.error('Failed to get invoice stats', 'EnhancedInvoiceProvider', e);
       rethrow;
     }
   }
 
-  Future<void> bulkDelete(List<String> invoiceIds) async {
+  Future<List<Map<String, dynamic>>> getMonthlyRevenue() async {
     try {
-      _updateState(_state.copyWith(loadingState: LoadingState.loading));
-      
-      for (final id in invoiceIds) {
-        await deleteInvoice(id, optimistic: false);
-      }
-      
-      await loadInvoices(); // Refresh the list
+      return await _databaseService.getMonthlyRevenue();
     } catch (e) {
-      _updateState(_state.copyWith(
-        loadingState: LoadingState.error,
-        errorMessage: 'Failed to bulk delete invoices: $e',
-      ));
+      Logger.error('Failed to get monthly revenue', 'EnhancedInvoiceProvider', e);
       rethrow;
     }
   }
 
-  // Export functionality
+  // Category-specific methods
+  List<CategorySpecificField> getCategoryFields(BusinessCategory category) {
+    return CategoryFieldDefinitions.getFieldsForCategory(category);
+  }
+
+  double getCategoryTaxRate(BusinessCategory category) {
+    return category.defaultTaxRate;
+  }
+
+  // Utility methods
+  void _setLoading(bool loading) {
+    _isLoading = loading;
+    notifyListeners();
+  }
+
+  void _setError(String? error) {
+    _error = error;
+    notifyListeners();
+  }
+
+  void clearError() {
+    _setError(null);
+  }
+
+  // Export methods
+  Future<String> exportInvoicesToCSV() async {
+    try {
+      final csvData = <List<String>>[];
+      
+      // Add header
+      csvData.add([
+        'Invoice Number',
+        'Date',
+        'Customer',
+        'Status',
+        'Subtotal',
+        'Tax',
+        'Total',
+        'Payment Status',
+      ]);
+
+      // Add data
+      for (var invoice in _invoices) {
+        csvData.add([
+          invoice.invoiceNumber,
+          invoice.createdAt.toIso8601String(),
+          invoice.customer.name,
+          invoice.status.name,
+          invoice.totals.subtotal.toString(),
+          invoice.totals.taxTotal.toString(),
+          invoice.totals.grandTotal.toString(),
+          invoice.paymentDetails.status.name,
+        ]);
+      }
+
+      return const CsvConverter().convert(csvData);
+    } catch (e) {
+      Logger.error('Failed to export invoices to CSV', 'EnhancedInvoiceProvider', e);
+      rethrow;
+    }
+  }
+
+  Future<String> exportCustomersToCSV() async {
+    try {
+      final csvData = <List<String>>[];
+      
+      // Add header
+      csvData.add([
+        'Name',
+        'Email',
+        'Phone',
+        'Address',
+        'GST Number',
+        'Type',
+      ]);
+
+      // Add data
+      for (var customer in _customers) {
+        csvData.add([
+          customer.name,
+          customer.email ?? '',
+          customer.phone ?? '',
+          customer.address ?? '',
+          customer.gstNumber ?? '',
+          customer.type.name,
+        ]);
+      }
+
+      return const CsvConverter().convert(csvData);
+    } catch (e) {
+      Logger.error('Failed to export customers to CSV', 'EnhancedInvoiceProvider', e);
+      rethrow;
+    }
+  }
+
+  // Backup and restore
   Future<Map<String, dynamic>> exportData() async {
     try {
       return {
-        'invoices': _state.invoices.map((inv) => inv.toJson()).toList(),
+        'invoices': _invoices.map((i) => i.toJson()).toList(),
+        'customers': _customers.map((c) => c.toJson()).toList(),
+        'products': _products.map((p) => {
+          'id': p.id,
+          'name': p.name,
+          'description': p.description,
+          'category': p.category.name,
+          'unit': p.unit,
+          'unitPrice': p.unitPrice,
+          'taxRate': p.taxRate,
+          'categoryFields': p.categoryFields.map((f) => f.toJson()).toList(),
+          'metadata': p.metadata,
+        }).toList(),
+        'businessSettings': _businessSettings != null ? {
+          'id': _businessSettings!.id,
+          'businessName': _businessSettings!.businessName,
+          'ownerName': _businessSettings!.ownerName,
+          'phone': _businessSettings!.phone,
+          'email': _businessSettings!.email,
+          'address': _businessSettings!.address,
+          'gstNumber': _businessSettings!.gstNumber,
+          'panNumber': _businessSettings!.panNumber,
+          'businessCategory': _businessSettings!.businessCategory.name,
+          'logoPath': _businessSettings!.logoPath,
+          'taxRate': _businessSettings!.taxRate,
+          'currency': _businessSettings!.currency,
+          'invoicePrefix': _businessSettings!.invoicePrefix,
+          'terms': _businessSettings!.terms,
+        } : null,
         'exportDate': DateTime.now().toIso8601String(),
-        'version': '1.0',
+        'version': '1.0.0',
       };
     } catch (e) {
-      throw Exception('Failed to export data: $e');
+      Logger.error('Failed to export data', 'EnhancedInvoiceProvider', e);
+      rethrow;
     }
   }
 
   Future<void> importData(Map<String, dynamic> data) async {
     try {
-      _updateState(_state.copyWith(loadingState: LoadingState.loading));
+      _setLoading(true);
       
-      final invoicesData = data['invoices'] as List;
-      final importedInvoices = invoicesData
-          .map((json) => Invoice.fromJson(json))
-          .toList();
+      // Clear existing data
+      _invoices.clear();
+      _customers.clear();
+      _products.clear();
       
-      // Validate imported data
-      for (final invoice in importedInvoices) {
-        final validationResult = _validateInvoice(invoice);
-        if (!validationResult.isValid) {
-          throw ValidationException(
-            'Invalid invoice data for ${invoice.invoiceNumber}: ${validationResult.errorMessage}'
+      // Import customers
+      if (data['customers'] != null) {
+        for (var customerData in data['customers']) {
+          final customer = Customer.fromJson(customerData);
+          await _databaseService.insertCustomer(customer);
+          _customers.add(customer);
+        }
+      }
+      
+      // Import products
+      if (data['products'] != null) {
+        for (var productData in data['products']) {
+          final product = Product(
+            id: productData['id'],
+            name: productData['name'],
+            description: productData['description'],
+            category: BusinessCategory.values.firstWhere((e) => e.name == productData['category']),
+            unit: productData['unit'],
+            unitPrice: productData['unitPrice'],
+            taxRate: productData['taxRate'],
+            categoryFields: (productData['categoryFields'] as List)
+                .map((f) => CategorySpecificField.fromJson(f))
+                .toList(),
+            metadata: productData['metadata'],
           );
+          await _databaseService.insertProduct(product);
+          _products.add(product);
         }
       }
       
-      // Save imported invoices
-      for (final invoice in importedInvoices) {
-        await _saveInvoice(invoice);
-      }
-      
-      await loadInvoices();
-    } catch (e) {
-      _updateState(_state.copyWith(
-        loadingState: LoadingState.error,
-        errorMessage: 'Failed to import data: $e',
-      ));
-      rethrow;
-    }
-  }
-
-  // Offline support methods
-  Future<void> _addToPendingQueue(Invoice invoice, String operation) async {
-    final pendingItem = {
-      'invoice': invoice.toJson(),
-      'operation': operation,
-      'timestamp': DateTime.now().toIso8601String(),
-    };
-    
-    final pendingQueue = _prefs.getStringList('pending_queue') ?? [];
-    pendingQueue.add(jsonEncode(pendingItem));
-    await _prefs.setStringList('pending_queue', pendingQueue);
-    
-    final updatedPending = [..._state.pendingInvoices, invoice];
-    _updateState(_state.copyWith(pendingInvoices: updatedPending));
-    
-    _updateSyncStatus(invoice.id, SyncStatus.pending);
-  }
-
-  Future<void> _syncPendingChanges() async {
-    if (_state.isOffline) return;
-    
-    try {
-      final pendingQueue = _prefs.getStringList('pending_queue') ?? [];
-      
-      for (final item in pendingQueue) {
-        final pendingItem = jsonDecode(item);
-        final invoice = Invoice.fromJson(pendingItem['invoice']);
-        final operation = pendingItem['operation'];
-        
-        try {
-          switch (operation) {
-            case 'create':
-            case 'update':
-              await _saveInvoice(invoice);
-              break;
-            case 'delete':
-              await _removeInvoice(invoice.id);
-              break;
-          }
-          
-          _updateSyncStatus(invoice.id, SyncStatus.synced);
-        } catch (e) {
-          _updateSyncStatus(invoice.id, SyncStatus.failed);
+      // Import invoices
+      if (data['invoices'] != null) {
+        for (var invoiceData in data['invoices']) {
+          final invoice = EnhancedInvoice.fromJson(invoiceData);
+          await _databaseService.insertInvoice(invoice);
+          _invoices.add(invoice);
         }
       }
       
-      // Clear pending queue
-      await _prefs.remove('pending_queue');
-      _updateState(_state.copyWith(pendingInvoices: []));
-      
-    } catch (e) {
-      Logger.error('Failed to sync pending changes', 'InvoiceProvider', e);
-    }
-  }
-
-  // Private helper methods
-  void _updateState(InvoiceState newState) {
-    _state = newState;
-    notifyListeners();
-  }
-
-  ValidationResult _validateInvoice(Invoice invoice) {
-    // Validate invoice number
-    final invoiceNumberResult = _validator.validate(invoice.invoiceNumber, 'invoiceNumber');
-    if (!invoiceNumberResult.isValid) return invoiceNumberResult;
-    
-    // Check for duplicate invoice numbers
-    final existingNumbers = _state.invoices
-        .where((inv) => inv.id != invoice.id)
-        .map((inv) => inv.invoiceNumber)
-        .toList();
-    
-    final duplicateResult = _validator.validateUnique(
-      invoice.invoiceNumber, 
-      'Invoice number', 
-      existingNumbers
-    );
-    if (!duplicateResult.isValid) return duplicateResult;
-    
-    // Validate client data
-    final clientNameResult = _validator.validate(invoice.client.name, 'clientName');
-    if (!clientNameResult.isValid) return clientNameResult;
-    
-    if (invoice.client.email.isNotEmpty) {
-      final emailResult = _validator.validate(invoice.client.email, 'email');
-      if (!emailResult.isValid) return emailResult;
-    }
-    
-    // Validate invoice items
-    if (invoice.items.isEmpty) {
-      return ValidationResult.invalid(
-        'Invoice must have at least one item',
-        ValidationError.businessRuleViolation,
-      );
-    }
-    
-    for (final item in invoice.items) {
-      final descResult = _validator.validate(item.description, 'description');
-      if (!descResult.isValid) return descResult;
-      
-      if (item.quantity <= 0) {
-        return ValidationResult.invalid(
-          'Item quantity must be greater than zero',
-          ValidationError.invalidRange,
+      // Import business settings
+      if (data['businessSettings'] != null) {
+        final settingsData = data['businessSettings'];
+        final settings = BusinessSettings(
+          id: settingsData['id'],
+          businessName: settingsData['businessName'],
+          ownerName: settingsData['ownerName'],
+          phone: settingsData['phone'],
+          email: settingsData['email'],
+          address: settingsData['address'],
+          gstNumber: settingsData['gstNumber'],
+          panNumber: settingsData['panNumber'],
+          businessCategory: BusinessCategory.values.firstWhere((e) => e.name == settingsData['businessCategory']),
+          logoPath: settingsData['logoPath'],
+          taxRate: settingsData['taxRate'],
+          currency: settingsData['currency'],
+          invoicePrefix: settingsData['invoicePrefix'],
+          terms: settingsData['terms'],
         );
+        await _databaseService.saveBusinessSettings(settings);
+        _businessSettings = settings;
       }
       
-      if (item.price < 0) {
-        return ValidationResult.invalid(
-          'Item price cannot be negative',
-          ValidationError.invalidRange,
-        );
-      }
-    }
-    
-    // Validate dates
-    final dateResult = _validator.validateDate(
-      invoice.dueDate, 
-      'Due date',
-      allowPast: false,
-    );
-    if (!dateResult.isValid) return dateResult;
-    
-    return ValidationResult.valid(null);
-  }
-
-  Future<void> _saveInvoice(Invoice invoice) async {
-    final invoices = [..._state.invoices];
-    final existingIndex = invoices.indexWhere((inv) => inv.id == invoice.id);
-    
-    if (existingIndex != -1) {
-      invoices[existingIndex] = invoice;
-    } else {
-      invoices.add(invoice);
-    }
-    
-    final invoicesJson = invoices.map((inv) => jsonEncode(inv.toJson())).toList();
-    await _prefs.setStringList('invoices', invoicesJson);
-  }
-
-  Future<void> _removeInvoice(String invoiceId) async {
-    final invoices = _state.invoices.where((inv) => inv.id != invoiceId).toList();
-    final invoicesJson = invoices.map((inv) => jsonEncode(inv.toJson())).toList();
-    await _prefs.setStringList('invoices', invoicesJson);
-  }
-
-  void _updateSyncStatus(String invoiceId, SyncStatus status) {
-    final updatedStatuses = {..._state.syncStatuses};
-    updatedStatuses[invoiceId] = status;
-    
-    _updateState(_state.copyWith(syncStatuses: updatedStatuses));
-    
-    // Save to preferences
-    final statusesJson = jsonEncode(updatedStatuses.map(
-      (key, value) => MapEntry(key, value.index)
-    ));
-    _prefs.setString('sync_statuses', statusesJson);
-  }
-
-  void _removeSyncStatus(String invoiceId) {
-    final updatedStatuses = {..._state.syncStatuses};
-    updatedStatuses.remove(invoiceId);
-    
-    _updateState(_state.copyWith(syncStatuses: updatedStatuses));
-    
-    final statusesJson = jsonEncode(updatedStatuses.map(
-      (key, value) => MapEntry(key, value.index)
-    ));
-    _prefs.setString('sync_statuses', statusesJson);
-  }
-
-  // Clear all data
-  Future<void> clearAllInvoices() async {
-    try {
-      _updateState(_state.copyWith(loadingState: LoadingState.loading));
-      
-      await _prefs.remove('invoices');
-      await _prefs.remove('pending_invoices');
-      await _prefs.remove('pending_queue');
-      await _prefs.remove('sync_statuses');
-      
-      _updateState(const InvoiceState(loadingState: LoadingState.success));
+      notifyListeners();
     } catch (e) {
-      _updateState(_state.copyWith(
-        loadingState: LoadingState.error,
-        errorMessage: 'Failed to clear invoices: $e',
-      ));
+      Logger.error('Failed to import data', 'EnhancedInvoiceProvider', e);
       rethrow;
+    } finally {
+      _setLoading(false);
     }
   }
-
-  // Force refresh
-  Future<void> refresh() async {
-    await loadInvoices();
-  }
-
-  // Error handling
-  void clearError() {
-    _updateState(_state.copyWith(
-      errorMessage: null,
-      loadingState: LoadingState.idle,
-    ));
-  }
 }
 
-enum InvoiceSortBy {
-  invoiceNumber,
-  clientName,
-  amount,
-  date,
-  dueDate,
-  status,
-}
+// Simple CSV converter
+class CsvConverter {
+  const CsvConverter();
 
-class ValidationException implements Exception {
-  final String message;
-  ValidationException(this.message);
-  
-  @override
-  String toString() => 'ValidationException: $message';
+  String convert(List<List<String>> data) {
+    return data.map((row) {
+      return row.map((cell) {
+        // Escape quotes and wrap in quotes if contains comma or quote
+        final escaped = cell.replaceAll('"', '""');
+        if (escaped.contains(',') || escaped.contains('"') || escaped.contains('\n')) {
+          return '"$escaped"';
+        }
+        return escaped;
+      }).join(',');
+    }).join('\n');
+  }
 } 
