@@ -9,6 +9,9 @@ import 'screens/dashboard_screen.dart';
 import 'screens/invoice_creation_screen.dart';
 import 'screens/grocery_invoice_creation_screen.dart';
 import 'screens/inventory_management_screen.dart';
+import 'screens/grocery_product_management_screen.dart';
+import 'screens/customer_loyalty_screen.dart';
+import 'screens/grocery_reports_screen.dart';
 import 'utils/theme.dart';
 import 'utils/logger.dart';
 
