@@ -7,12 +7,8 @@ enum BusinessCategory {
   clothingStore,
   electronicsStore,
   hardwareStore,
-  pharmacy,
-  stationeryStore,
-  beautySalon,
-  autoPartsStore,
   bakery,
-  mobileRepairShop,
+  stationeryStore,
 }
 
 extension BusinessCategoryExtension on BusinessCategory {
@@ -30,18 +26,31 @@ extension BusinessCategoryExtension on BusinessCategory {
         return 'Electronics Store';
       case BusinessCategory.hardwareStore:
         return 'Hardware Store';
-      case BusinessCategory.pharmacy:
-        return 'Pharmacy';
-      case BusinessCategory.stationeryStore:
-        return 'Stationery Store';
-      case BusinessCategory.beautySalon:
-        return 'Beauty Salon';
-      case BusinessCategory.autoPartsStore:
-        return 'Auto Parts Store';
       case BusinessCategory.bakery:
         return 'Bakery';
-      case BusinessCategory.mobileRepairShop:
-        return 'Mobile Repair Shop';
+      case BusinessCategory.stationeryStore:
+        return 'Stationery Store';
+    }
+  }
+
+  String get description {
+    switch (this) {
+      case BusinessCategory.jewelryStore:
+        return 'Sell jewelry, watches, and precious metals with certification tracking';
+      case BusinessCategory.groceryStore:
+        return 'Sell groceries, fresh produce, and household items with inventory management';
+      case BusinessCategory.restaurantCafe:
+        return 'Serve food and beverages with table management and kitchen orders';
+      case BusinessCategory.clothingStore:
+        return 'Sell clothing, accessories, and fashion items with size and color variants';
+      case BusinessCategory.electronicsStore:
+        return 'Sell electronics, gadgets, and tech accessories with warranty tracking';
+      case BusinessCategory.hardwareStore:
+        return 'Sell tools, building materials, and hardware with project tracking';
+      case BusinessCategory.bakery:
+        return 'Sell fresh baked goods, cakes, and pastries with production scheduling';
+      case BusinessCategory.stationeryStore:
+        return 'Sell office supplies, books, and stationery items with bulk pricing';
     }
   }
 
@@ -58,77 +67,32 @@ extension BusinessCategoryExtension on BusinessCategory {
       case BusinessCategory.electronicsStore:
         return Icons.devices;
       case BusinessCategory.hardwareStore:
-        return Icons.hardware;
-      case BusinessCategory.pharmacy:
-        return Icons.local_pharmacy;
-      case BusinessCategory.stationeryStore:
-        return Icons.edit_note;
-      case BusinessCategory.beautySalon:
-        return Icons.face;
-      case BusinessCategory.autoPartsStore:
-        return Icons.directions_car;
+        return Icons.build;
       case BusinessCategory.bakery:
         return Icons.cake;
-      case BusinessCategory.mobileRepairShop:
-        return Icons.phone_android;
+      case BusinessCategory.stationeryStore:
+        return Icons.edit;
     }
   }
 
   Color get color {
     switch (this) {
       case BusinessCategory.jewelryStore:
-        return const Color(0xFFFFD700); // Gold
+        return Colors.amber;
       case BusinessCategory.groceryStore:
-        return const Color(0xFF4CAF50); // Green
+        return Colors.green;
       case BusinessCategory.restaurantCafe:
-        return const Color(0xFFFF5722); // Orange
+        return Colors.orange;
       case BusinessCategory.clothingStore:
-        return const Color(0xFF9C27B0); // Purple
+        return Colors.pink;
       case BusinessCategory.electronicsStore:
-        return const Color(0xFF2196F3); // Blue
+        return Colors.blue;
       case BusinessCategory.hardwareStore:
-        return const Color(0xFF795548); // Brown
-      case BusinessCategory.pharmacy:
-        return const Color(0xFFE91E63); // Pink
-      case BusinessCategory.stationeryStore:
-        return const Color(0xFF607D8B); // Blue Grey
-      case BusinessCategory.beautySalon:
-        return const Color(0xFFFF9800); // Orange
-      case BusinessCategory.autoPartsStore:
-        return const Color(0xFF3F51B5); // Indigo
+        return Colors.brown;
       case BusinessCategory.bakery:
-        return const Color(0xFF8D6E63); // Brown
-      case BusinessCategory.mobileRepairShop:
-        return const Color(0xFF00BCD4); // Cyan
-    }
-  }
-
-  String get description {
-    switch (this) {
-      case BusinessCategory.jewelryStore:
-        return 'Create invoices with metal types, karat details, and hallmark certification';
-      case BusinessCategory.groceryStore:
-        return 'Manage inventory with barcode scanning and expiry tracking';
-      case BusinessCategory.restaurantCafe:
-        return 'Handle orders with table numbers and special instructions';
-      case BusinessCategory.clothingStore:
-        return 'Track sizes, colors, and brand details with return policies';
-      case BusinessCategory.electronicsStore:
-        return 'Manage warranties, serial numbers, and installation services';
-      case BusinessCategory.hardwareStore:
-        return 'Handle bulk pricing and project-based invoicing';
-      case BusinessCategory.pharmacy:
-        return 'Track prescriptions, dosages, and controlled substances';
+        return Colors.orange;
       case BusinessCategory.stationeryStore:
-        return 'Manage academic and corporate customers with bulk discounts';
-      case BusinessCategory.beautySalon:
-        return 'Schedule appointments and track service packages';
-      case BusinessCategory.autoPartsStore:
-        return 'Handle vehicle compatibility and core exchange values';
-      case BusinessCategory.bakery:
-        return 'Manage custom orders and delivery scheduling';
-      case BusinessCategory.mobileRepairShop:
-        return 'Track device repairs with IMEI and warranty details';
+        return Colors.purple;
     }
   }
 
@@ -136,156 +100,577 @@ extension BusinessCategoryExtension on BusinessCategory {
     switch (this) {
       case BusinessCategory.jewelryStore:
         return [
-          'Metal type (Gold, Silver, Platinum)',
-          'Karat/Purity fields',
-          'Weight in grams',
-          'Making charges',
-          'Stone details',
-          'Hallmark certification',
-          'GST calculation',
-          'Customer insurance details'
+          'Gemstone Certification',
+          'Precious Metal Tracking',
+          'Jewelry Appraisal',
+          'Warranty Management',
+          'Custom Design Orders',
+          'Layaway Plans',
+          'Insurance Documentation',
+          'Quality Certificates',
         ];
       case BusinessCategory.groceryStore:
         return [
-          'Barcode scanning',
-          'Quantity and unit types',
-          'Expiry date tracking',
-          'Batch number',
-          'Category organization',
-          'Discount calculations',
-          'Multiple payment methods',
-          'Loyalty points'
+          'Barcode Scanning',
+          'Inventory Management',
+          'Expiry Date Tracking',
+          'Supplier Management',
+          'Loyalty Program',
+          'Promotional Offers',
+          'Fresh Produce Tracking',
+          'Bulk Pricing',
         ];
       case BusinessCategory.restaurantCafe:
         return [
-          'Menu item selection',
-          'Table number',
-          'Order type (Dine-in, Takeaway, Delivery)',
-          'Special instructions',
-          'Tax calculations',
-          'Split billing',
-          'Tip calculation',
-          'Kitchen order token (KOT)'
+          'Table Management',
+          'Kitchen Orders',
+          'Menu Management',
+          'Reservation System',
+          'Takeaway Orders',
+          'Delivery Tracking',
+          'Staff Scheduling',
+          'Recipe Management',
         ];
       case BusinessCategory.clothingStore:
         return [
-          'Size and color specifications',
-          'Brand details',
-          'Season/Collection info',
-          'Return policy terms',
-          'Alteration charges',
-          'GST rates for textiles',
-          'Exchange policy details'
+          'Size Variants',
+          'Color Options',
+          'Brand Management',
+          'Seasonal Collections',
+          'Fitting Room Booking',
+          'Alteration Services',
+          'Return Management',
+          'Fashion Trends',
         ];
       case BusinessCategory.electronicsStore:
         return [
-          'Model number and specifications',
-          'Warranty period and terms',
-          'Serial number tracking',
-          'Installation charges',
-          'Extended warranty options',
-          'Return/exchange policy',
-          'Service center details'
+          'Warranty Tracking',
+          'Technical Support',
+          'Installation Services',
+          'Trade-in Programs',
+          'Extended Warranty',
+          'Product Demos',
+          'Repair Services',
+          'Accessory Bundles',
         ];
       case BusinessCategory.hardwareStore:
         return [
-          'Product specifications',
-          'Quantity in different units',
-          'Brand and grade information',
-          'Bulk pricing options',
-          'Project-based invoicing',
-          'Delivery charges',
-          'Installation services'
-        ];
-      case BusinessCategory.pharmacy:
-        return [
-          'Medicine name and composition',
-          'Dosage information',
-          'Prescription number',
-          'Doctor\'s name',
-          'Batch number and expiry',
-          'Generic/Brand options',
-          'Insurance claim support',
-          'Controlled substance tracking'
-        ];
-      case BusinessCategory.stationeryStore:
-        return [
-          'Product categories',
-          'Bulk quantity discounts',
-          'Academic/Corporate types',
-          'Seasonal pricing',
-          'Gift wrapping options',
-          'Educational institution discounts'
-        ];
-      case BusinessCategory.beautySalon:
-        return [
-          'Service type selection',
-          'Stylist/Therapist name',
-          'Service duration',
-          'Product used details',
-          'Package deals',
-          'Membership discounts',
-          'Appointment scheduling'
-        ];
-      case BusinessCategory.autoPartsStore:
-        return [
-          'Vehicle compatibility',
-          'Part number and specs',
-          'OEM/Aftermarket classification',
-          'Warranty information',
-          'Installation charges',
-          'Core exchange values',
-          'Bulk pricing for garages'
+          'Project Tracking',
+          'Contractor Accounts',
+          'Tool Rental',
+          'Material Estimation',
+          'Safety Equipment',
+          'Delivery Services',
+          'Installation Services',
+          'DIY Guides',
         ];
       case BusinessCategory.bakery:
         return [
-          'Product categories',
-          'Custom order details',
-          'Delivery date and time',
-          'Special dietary info',
-          'Decoration charges',
-          'Advance booking system',
-          'Seasonal item pricing'
+          'Production Scheduling',
+          'Ingredient Management',
+          'Custom Cake Orders',
+          'Allergen Tracking',
+          'Freshness Monitoring',
+          'Catering Orders',
+          'Recipe Scaling',
+          'Quality Control',
         ];
-      case BusinessCategory.mobileRepairShop:
+      case BusinessCategory.stationeryStore:
         return [
-          'Device model and IMEI',
-          'Problem description',
-          'Parts replaced',
-          'Labor charges',
-          'Warranty on repair',
-          'Data backup/restore',
-          'Pickup/delivery options'
+          'Bulk Pricing',
+          'School Supplies',
+          'Office Equipment',
+          'Printing Services',
+          'Book Management',
+          'Art Supplies',
+          'Corporate Accounts',
+          'Educational Discounts',
         ];
     }
   }
 
-  double get defaultTaxRate {
+  List<String> get productCategories {
     switch (this) {
       case BusinessCategory.jewelryStore:
-        return 3.0; // 3% GST for jewelry
+        return [
+          'Rings',
+          'Necklaces',
+          'Earrings',
+          'Bracelets',
+          'Watches',
+          'Pendants',
+          'Anklets',
+          'Wedding Bands',
+          'Diamond Jewelry',
+          'Gold Jewelry',
+          'Silver Jewelry',
+          'Platinum Jewelry',
+        ];
       case BusinessCategory.groceryStore:
-        return 5.0; // 5% GST for groceries
+        return [
+          'Fruits & Vegetables',
+          'Dairy & Eggs',
+          'Meat & Fish',
+          'Grains & Cereals',
+          'Beverages',
+          'Snacks',
+          'Frozen Foods',
+          'Personal Care',
+          'Household',
+          'Baby Care',
+          'Pet Supplies',
+          'Others',
+        ];
       case BusinessCategory.restaurantCafe:
-        return 5.0; // 5% GST for restaurants
+        return [
+          'Appetizers',
+          'Main Course',
+          'Desserts',
+          'Beverages',
+          'Alcoholic Drinks',
+          'Coffee & Tea',
+          'Fast Food',
+          'Healthy Options',
+          'Vegetarian',
+          'Vegan',
+          'Gluten-Free',
+          'Kids Menu',
+        ];
       case BusinessCategory.clothingStore:
-        return 5.0; // 5% GST for textiles
+        return [
+          'Men\'s Clothing',
+          'Women\'s Clothing',
+          'Kids Clothing',
+          'Accessories',
+          'Shoes',
+          'Bags',
+          'Jewelry',
+          'Watches',
+          'Sunglasses',
+          'Belts',
+          'Scarves',
+          'Hats',
+        ];
       case BusinessCategory.electronicsStore:
-        return 18.0; // 18% GST for electronics
+        return [
+          'Smartphones',
+          'Laptops',
+          'Tablets',
+          'TVs & Audio',
+          'Gaming',
+          'Cameras',
+          'Accessories',
+          'Smart Home',
+          'Wearables',
+          'Computers',
+          'Networking',
+          'Software',
+        ];
       case BusinessCategory.hardwareStore:
-        return 18.0; // 18% GST for hardware
-      case BusinessCategory.pharmacy:
-        return 5.0; // 5% GST for medicines
-      case BusinessCategory.stationeryStore:
-        return 18.0; // 18% GST for stationery
-      case BusinessCategory.beautySalon:
-        return 18.0; // 18% GST for services
-      case BusinessCategory.autoPartsStore:
-        return 18.0; // 18% GST for auto parts
+        return [
+          'Tools',
+          'Building Materials',
+          'Electrical',
+          'Plumbing',
+          'Paint & Supplies',
+          'Garden & Outdoor',
+          'Safety Equipment',
+          'Automotive',
+          'Fasteners',
+          'Adhesives',
+          'Measuring Tools',
+          'Power Tools',
+        ];
       case BusinessCategory.bakery:
-        return 5.0; // 5% GST for food items
-      case BusinessCategory.mobileRepairShop:
-        return 18.0; // 18% GST for services
+        return [
+          'Bread',
+          'Cakes',
+          'Pastries',
+          'Cookies',
+          'Muffins',
+          'Pies',
+          'Donuts',
+          'Sandwiches',
+          'Beverages',
+          'Custom Orders',
+          'Seasonal Items',
+          'Dietary Options',
+        ];
+      case BusinessCategory.stationeryStore:
+        return [
+          'Writing Supplies',
+          'Paper Products',
+          'Office Equipment',
+          'Art Supplies',
+          'Books',
+          'School Supplies',
+          'Desk Accessories',
+          'Filing Supplies',
+          'Presentation Materials',
+          'Technology',
+          'Gifts',
+          'Printing Services',
+        ];
+    }
+  }
+
+  List<String> get paymentMethods {
+    switch (this) {
+      case BusinessCategory.jewelryStore:
+        return [
+          'Cash',
+          'Card',
+          'UPI',
+          'Bank Transfer',
+          'Layaway',
+          'EMI',
+          'Gold Exchange',
+          'Insurance Claim',
+        ];
+      case BusinessCategory.groceryStore:
+        return [
+          'Cash',
+          'Card',
+          'UPI',
+          'Store Credit',
+          'Loyalty Points',
+          'Split Payment',
+          'Partial Payment',
+        ];
+      case BusinessCategory.restaurantCafe:
+        return [
+          'Cash',
+          'Card',
+          'UPI',
+          'Digital Wallets',
+          'Split Bill',
+          'Corporate Account',
+          'Gift Cards',
+        ];
+      case BusinessCategory.clothingStore:
+        return [
+          'Cash',
+          'Card',
+          'UPI',
+          'Store Credit',
+          'Layaway',
+          'Split Payment',
+          'Exchange',
+        ];
+      case BusinessCategory.electronicsStore:
+        return [
+          'Cash',
+          'Card',
+          'UPI',
+          'EMI',
+          'Trade-in',
+          'Corporate Account',
+          'Extended Warranty',
+        ];
+      case BusinessCategory.hardwareStore:
+        return [
+          'Cash',
+          'Card',
+          'UPI',
+          'Contractor Account',
+          'Project Billing',
+          'Rental Payment',
+          'Delivery Payment',
+        ];
+      case BusinessCategory.bakery:
+        return [
+          'Cash',
+          'Card',
+          'UPI',
+          'Pre-orders',
+          'Catering Payment',
+          'Loyalty Points',
+          'Split Payment',
+        ];
+      case BusinessCategory.stationeryStore:
+        return [
+          'Cash',
+          'Card',
+          'UPI',
+          'Corporate Account',
+          'Bulk Payment',
+          'School Account',
+          'Printing Payment',
+        ];
+    }
+  }
+
+  List<String> get reportTypes {
+    switch (this) {
+      case BusinessCategory.jewelryStore:
+        return [
+          'Sales by Category',
+          'Gemstone Analysis',
+          'Warranty Reports',
+          'Appraisal History',
+          'Layaway Tracking',
+          'Insurance Claims',
+          'Customer Preferences',
+          'Profit Margins',
+        ];
+      case BusinessCategory.groceryStore:
+        return [
+          'Sales Analysis',
+          'Inventory Reports',
+          'Customer Analytics',
+          'Profit Margins',
+          'Expiry Reports',
+          'Supplier Performance',
+          'Promotion Effectiveness',
+          'Loyalty Analytics',
+        ];
+      case BusinessCategory.restaurantCafe:
+        return [
+          'Sales by Menu',
+          'Table Turnover',
+          'Kitchen Performance',
+          'Reservation Analytics',
+          'Delivery Reports',
+          'Staff Performance',
+          'Food Cost Analysis',
+          'Customer Feedback',
+        ];
+      case BusinessCategory.clothingStore:
+        return [
+          'Sales by Category',
+          'Size Analytics',
+          'Color Preferences',
+          'Seasonal Trends',
+          'Return Analysis',
+          'Brand Performance',
+          'Fitting Room Usage',
+          'Alteration Services',
+        ];
+      case BusinessCategory.electronicsStore:
+        return [
+          'Sales by Category',
+          'Warranty Claims',
+          'Technical Support',
+          'Installation Services',
+          'Trade-in Analysis',
+          'Accessory Sales',
+          'Repair Services',
+          'Customer Satisfaction',
+        ];
+      case BusinessCategory.hardwareStore:
+        return [
+          'Sales by Category',
+          'Project Tracking',
+          'Contractor Accounts',
+          'Tool Rental',
+          'Material Usage',
+          'Delivery Services',
+          'Installation Services',
+          'Safety Compliance',
+        ];
+      case BusinessCategory.bakery:
+        return [
+          'Sales by Category',
+          'Production Analysis',
+          'Ingredient Usage',
+          'Custom Orders',
+          'Catering Reports',
+          'Freshness Tracking',
+          'Quality Control',
+          'Recipe Performance',
+        ];
+      case BusinessCategory.stationeryStore:
+        return [
+          'Sales by Category',
+          'Bulk Orders',
+          'School Supplies',
+          'Corporate Accounts',
+          'Printing Services',
+          'Book Sales',
+          'Art Supplies',
+          'Educational Discounts',
+        ];
+    }
+  }
+
+  Map<String, dynamic> get defaultSettings {
+    switch (this) {
+      case BusinessCategory.jewelryStore:
+        return {
+          'taxRate': 3.0,
+          'currency': '₹',
+          'language': 'English',
+          'timezone': 'Asia/Kolkata',
+          'businessHours': {
+            'monday': {'open': '10:00', 'close': '19:00'},
+            'tuesday': {'open': '10:00', 'close': '19:00'},
+            'wednesday': {'open': '10:00', 'close': '19:00'},
+            'thursday': {'open': '10:00', 'close': '19:00'},
+            'friday': {'open': '10:00', 'close': '19:00'},
+            'saturday': {'open': '10:00', 'close': '18:00'},
+            'sunday': {'open': '11:00', 'close': '17:00'},
+          },
+          'features': {
+            'warrantyTracking': true,
+            'certificationTracking': true,
+            'layawayPlans': true,
+            'insuranceClaims': true,
+          },
+        };
+      case BusinessCategory.groceryStore:
+        return {
+          'taxRate': 5.0,
+          'currency': '₹',
+          'language': 'English',
+          'timezone': 'Asia/Kolkata',
+          'businessHours': {
+            'monday': {'open': '07:00', 'close': '22:00'},
+            'tuesday': {'open': '07:00', 'close': '22:00'},
+            'wednesday': {'open': '07:00', 'close': '22:00'},
+            'thursday': {'open': '07:00', 'close': '22:00'},
+            'friday': {'open': '07:00', 'close': '22:00'},
+            'saturday': {'open': '07:00', 'close': '22:00'},
+            'sunday': {'open': '07:00', 'close': '22:00'},
+          },
+          'features': {
+            'barcodeScanning': true,
+            'inventoryManagement': true,
+            'loyaltyProgram': true,
+            'expiryTracking': true,
+          },
+        };
+      case BusinessCategory.restaurantCafe:
+        return {
+          'taxRate': 5.0,
+          'currency': '₹',
+          'language': 'English',
+          'timezone': 'Asia/Kolkata',
+          'businessHours': {
+            'monday': {'open': '08:00', 'close': '23:00'},
+            'tuesday': {'open': '08:00', 'close': '23:00'},
+            'wednesday': {'open': '08:00', 'close': '23:00'},
+            'thursday': {'open': '08:00', 'close': '23:00'},
+            'friday': {'open': '08:00', 'close': '00:00'},
+            'saturday': {'open': '08:00', 'close': '00:00'},
+            'sunday': {'open': '08:00', 'close': '22:00'},
+          },
+          'features': {
+            'tableManagement': true,
+            'kitchenOrders': true,
+            'reservations': true,
+            'delivery': true,
+          },
+        };
+      case BusinessCategory.clothingStore:
+        return {
+          'taxRate': 5.0,
+          'currency': '₹',
+          'language': 'English',
+          'timezone': 'Asia/Kolkata',
+          'businessHours': {
+            'monday': {'open': '10:00', 'close': '20:00'},
+            'tuesday': {'open': '10:00', 'close': '20:00'},
+            'wednesday': {'open': '10:00', 'close': '20:00'},
+            'thursday': {'open': '10:00', 'close': '20:00'},
+            'friday': {'open': '10:00', 'close': '21:00'},
+            'saturday': {'open': '10:00', 'close': '21:00'},
+            'sunday': {'open': '11:00', 'close': '19:00'},
+          },
+          'features': {
+            'sizeVariants': true,
+            'colorOptions': true,
+            'fittingRooms': true,
+            'alterationServices': true,
+          },
+        };
+      case BusinessCategory.electronicsStore:
+        return {
+          'taxRate': 18.0,
+          'currency': '₹',
+          'language': 'English',
+          'timezone': 'Asia/Kolkata',
+          'businessHours': {
+            'monday': {'open': '10:00', 'close': '20:00'},
+            'tuesday': {'open': '10:00', 'close': '20:00'},
+            'wednesday': {'open': '10:00', 'close': '20:00'},
+            'thursday': {'open': '10:00', 'close': '20:00'},
+            'friday': {'open': '10:00', 'close': '21:00'},
+            'saturday': {'open': '10:00', 'close': '21:00'},
+            'sunday': {'open': '11:00', 'close': '19:00'},
+          },
+          'features': {
+            'warrantyTracking': true,
+            'technicalSupport': true,
+            'installationServices': true,
+            'tradeInPrograms': true,
+          },
+        };
+      case BusinessCategory.hardwareStore:
+        return {
+          'taxRate': 18.0,
+          'currency': '₹',
+          'language': 'English',
+          'timezone': 'Asia/Kolkata',
+          'businessHours': {
+            'monday': {'open': '08:00', 'close': '19:00'},
+            'tuesday': {'open': '08:00', 'close': '19:00'},
+            'wednesday': {'open': '08:00', 'close': '19:00'},
+            'thursday': {'open': '08:00', 'close': '19:00'},
+            'friday': {'open': '08:00', 'close': '19:00'},
+            'saturday': {'open': '08:00', 'close': '18:00'},
+            'sunday': {'open': '09:00', 'close': '17:00'},
+          },
+          'features': {
+            'projectTracking': true,
+            'contractorAccounts': true,
+            'toolRental': true,
+            'deliveryServices': true,
+          },
+        };
+      case BusinessCategory.bakery:
+        return {
+          'taxRate': 5.0,
+          'currency': '₹',
+          'language': 'English',
+          'timezone': 'Asia/Kolkata',
+          'businessHours': {
+            'monday': {'open': '06:00', 'close': '21:00'},
+            'tuesday': {'open': '06:00', 'close': '21:00'},
+            'wednesday': {'open': '06:00', 'close': '21:00'},
+            'thursday': {'open': '06:00', 'close': '21:00'},
+            'friday': {'open': '06:00', 'close': '21:00'},
+            'saturday': {'open': '06:00', 'close': '21:00'},
+            'sunday': {'open': '07:00', 'close': '20:00'},
+          },
+          'features': {
+            'productionScheduling': true,
+            'customOrders': true,
+            'catering': true,
+            'allergenTracking': true,
+          },
+        };
+      case BusinessCategory.stationeryStore:
+        return {
+          'taxRate': 18.0,
+          'currency': '₹',
+          'language': 'English',
+          'timezone': 'Asia/Kolkata',
+          'businessHours': {
+            'monday': {'open': '09:00', 'close': '19:00'},
+            'tuesday': {'open': '09:00', 'close': '19:00'},
+            'wednesday': {'open': '09:00', 'close': '19:00'},
+            'thursday': {'open': '09:00', 'close': '19:00'},
+            'friday': {'open': '09:00', 'close': '19:00'},
+            'saturday': {'open': '09:00', 'close': '18:00'},
+            'sunday': {'open': '10:00', 'close': '17:00'},
+          },
+          'features': {
+            'bulkPricing': true,
+            'corporateAccounts': true,
+            'printingServices': true,
+            'educationalDiscounts': true,
+          },
+        };
     }
   }
 }
