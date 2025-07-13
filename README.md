@@ -1,307 +1,304 @@
 # Invoice - Professional Invoice Management App
 
-A comprehensive, Airbnb-inspired invoice management application designed specifically for local merchants in India. This app provides category-specific features, modern UI/UX, and robust business functionality.
+A comprehensive, production-ready invoice management application designed specifically for local merchants across eight business categories. Built with Flutter and inspired by Airbnb's design principles.
 
-## 🎯 Features
+## � Supported Business Categories
 
-### Core Features
-- **Multi-Category Support**: 12 business categories with specialized fields
-- **Airbnb-Inspired Design**: Clean, modern UI with smooth animations
-- **SQLite Database**: Local storage with offline-first capability
-- **Dynamic Forms**: Category-specific field generation
-- **PDF Generation**: Professional invoice export
-- **Analytics Dashboard**: Revenue tracking and business insights
-- **Customer Management**: Complete customer database
-- **Product Catalog**: Category-specific product management
+### 1. Jewelry Store
+- **Specialized Features**: Gemstone certification, warranty management, appraisal workflows, precious metal tracking
+- **Invoice Types**: High-value items, certification documents, warranty certificates
+- **Color Scheme**: Elegant red (rausch)
 
-### Business Categories
-1. **Jewelry Store** - Metal type, karat, weight, making charges
-2. **Grocery Store** - Barcode, unit type, expiry date, batch number
-3. **Restaurant/Café** - Table number, order type, special instructions
-4. **Clothing Store** - Size, color, brand, alteration charges
-5. **Electronics Store** - Model number, serial number, warranty
-6. **Hardware Store** - Specifications, material, grade, bulk pricing
-7. **Pharmacy** - Medicine name, composition, prescription details
-8. **Stationery Store** - Category, customer type, bulk discount
-9. **Beauty Salon** - Service type, stylist, duration, products used
-10. **Auto Parts Store** - Vehicle compatibility, part number, OEM type
-11. **Bakery** - Category, custom order, delivery, dietary info
-12. **Mobile Repair Shop** - Device model, IMEI, problem description
+### 2. Restaurant/Café
+- **Specialized Features**: Table management, menu categories, kitchen workflow, server management
+- **Invoice Types**: Dine-in, takeaway, delivery, catering services
+- **Color Scheme**: Professional blue (babu)
 
-### Technical Features
-- **Offline-First**: Works without internet connection
-- **Data Export**: CSV, Excel, PDF formats
-- **Backup & Restore**: Complete data backup functionality
-- **Search & Filter**: Advanced search across all entities
-- **Real-time Calculations**: Automatic tax and total calculations
-- **Responsive Design**: Works on all screen sizes
-- **Smooth Animations**: Airbnb-style transitions and effects
+### 3. Clothing Store
+- **Specialized Features**: Size management, color variants, brand management, seasonal collections
+- **Invoice Types**: Fashion items, accessories, seasonal collections
+- **Color Scheme**: Warm orange (arches)
 
-## 🏗️ Architecture
+### 4. Electronics Store
+- **Specialized Features**: Warranty tracking, technical support, installation services, trade-in programs
+- **Invoice Types**: Electronics, warranty services, installation, trade-ins
+- **Color Scheme**: Modern indigo
+
+### 5. Hardware Store
+- **Specialized Features**: Project tracking, contractor management, tool rental, bulk pricing
+- **Invoice Types**: Tools, materials, contractor services, rentals
+- **Color Scheme**: Industrial orange
+
+### 6. Bakery
+- **Specialized Features**: Production scheduling, ingredient management, allergen tracking, custom orders
+- **Invoice Types**: Fresh baked goods, custom cakes, wholesale orders
+- **Color Scheme**: Warm brown
+
+### 7. Stationery Store
+- **Specialized Features**: School supplies, office materials, art supplies, bulk orders
+- **Invoice Types**: School supplies, office materials, art supplies
+- **Color Scheme**: Professional teal
+
+### 8. Grocery Store
+- **Specialized Features**: Fresh produce management, dairy tracking, loyalty programs, expiry alerts
+- **Invoice Types**: Fresh produce, dairy, pantry items, organic products
+- **Color Scheme**: Fresh green
+
+## 🏗️ Architecture & Technology Stack
+
+### Core Technologies
+- **Framework**: Flutter 3.x
+- **State Management**: Provider pattern
+- **UI Design**: Airbnb-inspired design system
+- **Navigation**: Custom bottom navigation with category-specific routing
+- **Data Models**: Comprehensive business category models with JSON serialization
 
 ### Project Structure
 ```
 lib/
 ├── models/
-│   ├── business_category.dart
-│   ├── enhanced_invoice.dart
-│   └── settings.dart
+│   ├── business_category.dart          # Business category enums and models
+│   ├── customer_loyalty.dart          # Customer loyalty program models
+│   └── enhanced_invoice.dart          # Enhanced invoice models
 ├── providers/
-│   ├── enhanced_invoice_provider.dart
-│   └── settings_provider.dart
+│   ├── settings_provider.dart         # Business settings management
+│   └── enhanced_invoice_provider.dart # Invoice data management
 ├── screens/
-│   ├── welcome_screen.dart
-│   ├── category_selection_screen.dart
-│   ├── business_setup_screen.dart
-│   ├── dashboard_screen.dart
-│   └── invoice_creation_screen.dart
-├── services/
-│   └── database_service.dart
-├── utils/
-│   ├── theme.dart
-│   └── logger.dart
-├── widgets/
-│   ├── airbnb_card.dart
-│   ├── stat_card.dart
-│   ├── recent_invoice_card.dart
-│   ├── quick_action_button.dart
-│   └── category_field_widget.dart
-└── main.dart
+│   ├── main_navigation_screen.dart    # Main app navigation
+│   ├── enhanced_dashboard_screen.dart # Category-specific dashboard
+│   ├── enhanced_invoice_list_screen.dart # Invoice management
+│   ├── enhanced_customer_screen.dart  # Customer management
+│   ├── enhanced_settings_screen.dart  # App settings
+│   ├── category_product_management_screen.dart # Product management
+│   └── category_specific_screens.dart # Category-specific screens
+├── theme/
+│   └── app_theme.dart                 # Airbnb-inspired design system
+└── main.dart                          # App entry point
 ```
-
-### Technology Stack
-- **Framework**: Flutter 3.0+
-- **State Management**: Provider
-- **Database**: SQLite (sqflite)
-- **Charts**: fl_chart
-- **PDF Generation**: pdf + printing
-- **JSON Serialization**: json_annotation
-- **UI Components**: Custom Airbnb-inspired widgets
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Flutter SDK 3.0 or higher
-- Dart SDK 2.19 or higher
-- Android Studio / VS Code
-- Android SDK / Xcode (for mobile development)
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/invoice-app.git
-   cd invoice-app
-   ```
-
-2. **Install dependencies**
-   ```bash
-   flutter pub get
-   ```
-
-3. **Generate code (for JSON serialization)**
-   ```bash
-   flutter packages pub run build_runner build
-   ```
-
-4. **Run the app**
-   ```bash
-   flutter run
-   ```
-
-### Configuration
-
-The app uses several configuration files:
-
-- **pubspec.yaml**: Dependencies and assets
-- **lib/utils/theme.dart**: Airbnb-inspired theme configuration
-- **lib/models/business_category.dart**: Business category definitions
-
-## 📱 User Flow
-
-### 1. Onboarding
-1. **Welcome Screen**: App introduction with animations
-2. **Category Selection**: Choose from 12 business categories
-3. **Business Setup**: 3-step business configuration
-
-### 2. Main App
-1. **Dashboard**: Overview with statistics and quick actions
-2. **Invoice Creation**: Dynamic form with category-specific fields
-3. **Customer Management**: Add and manage customers
-4. **Product Catalog**: Category-specific product management
-5. **Reports**: Analytics and business insights
 
 ## 🎨 Design System
 
 ### Airbnb-Inspired Theme
-- **Primary Color**: #FF5A5F (Airbnb Red)
-- **Secondary Colors**: 
-  - Green: #00A699
-  - Orange: #FFB400
-  - Purple: #484848
-- **Typography**: Roboto font family
-- **Spacing**: 8px grid system
-- **Border Radius**: 12px for cards, 8px for buttons
-
-### UI Components
-- **Cards**: Elevated with subtle shadows
-- **Buttons**: Rounded corners with hover effects
-- **Forms**: Clean input fields with validation
+- **Color Palette**: Professional color schemes for each business category
+- **Typography**: Clean, readable font hierarchy
+- **Spacing**: Consistent 8px grid system
+- **Components**: Reusable UI components with category-specific theming
 - **Animations**: Smooth transitions and micro-interactions
 
-## 🗄️ Database Schema
+### Category-Specific Design
+- **Dynamic Colors**: Each business category has its own color scheme
+- **Custom Icons**: Category-specific icons and visual elements
+- **Adaptive UI**: UI components adapt to business type
+- **Brand Consistency**: Maintains professional appearance across all categories
 
-### Tables
-1. **invoices**: Main invoice data
-2. **customers**: Customer information
-3. **products**: Product catalog
-4. **invoice_items**: Individual invoice items
-5. **category_fields**: Dynamic category-specific fields
-6. **business_settings**: Business configuration
+## � Core Features
 
-### Key Features
-- **Foreign Key Relationships**: Proper data integrity
-- **Indexes**: Optimized for performance
-- **JSON Storage**: Flexible category-specific data
-- **Migration Support**: Version-based schema updates
+### 1. Enhanced Dashboard
+- **Category-Specific Metrics**: Revenue, orders, customers, products
+- **Quick Actions**: Create invoice, add customer, manage products
+- **Recent Activity**: Latest transactions and updates
+- **Performance Charts**: Visual data representation
+- **Business Insights**: Category-specific analytics
 
-## 🔧 Development
+### 2. Invoice Management
+- **Category-Specific Invoices**: Tailored invoice types for each business
+- **Advanced Filtering**: Status, date, amount, customer filters
+- **Search & Sort**: Comprehensive search and sorting options
+- **Bulk Operations**: Export, print, duplicate invoices
+- **Status Tracking**: Paid, pending, overdue, cancelled, draft
 
-### Code Generation
-The app uses code generation for JSON serialization:
+### 3. Customer Management
+- **Customer Profiles**: Comprehensive customer information
+- **Loyalty Programs**: Points, tiers, rewards management
+- **Customer Analytics**: Segmentation, behavior analysis
+- **Category-Specific Fields**: Business-specific customer attributes
+- **Communication Tools**: Email, notifications, messaging
 
-```bash
-# Generate code
-flutter packages pub run build_runner build
+### 4. Product Management
+- **Category-Specific Products**: Tailored product attributes
+- **Inventory Tracking**: Stock levels, alerts, management
+- **Pricing Management**: Dynamic pricing, discounts, bulk pricing
+- **Product Categories**: Organized product hierarchy
+- **Image Management**: Product photos and galleries
 
-# Watch for changes
-flutter packages pub run build_runner watch
+### 5. Reports & Analytics
+- **Category-Specific Reports**: Business-specific analytics
+- **Financial Reports**: Revenue, profit, expense analysis
+- **Customer Reports**: Behavior, loyalty, segmentation
+- **Product Reports**: Performance, inventory, sales
+- **Export Options**: PDF, Excel, CSV formats
+
+### 6. Settings & Configuration
+- **Business Profile**: Company information and branding
+- **Category-Specific Settings**: Business-type configuration
+- **Notification Preferences**: Push, email, SMS settings
+- **Data Management**: Import, export, backup options
+- **Security Settings**: Privacy, access control
+
+## 🚀 Advanced Features
+
+### 1. Category-Specific Workflows
+- **Jewelry Store**: Certification, appraisal, warranty management
+- **Restaurant**: Table management, kitchen orders, menu planning
+- **Clothing**: Size charts, color management, seasonal collections
+- **Electronics**: Warranty tracking, technical support, installation
+- **Hardware**: Project tracking, contractor management, tool rental
+- **Bakery**: Production scheduling, ingredient tracking, allergen management
+- **Stationery**: School/office supplies, art materials, bulk orders
+- **Grocery**: Fresh produce, dairy management, loyalty programs
+
+### 2. Customer Loyalty System
+- **Points System**: Earn and redeem points
+- **Tier Management**: Bronze, Silver, Gold, Platinum tiers
+- **Rewards Program**: Discounts, free items, special offers
+- **Member Benefits**: Exclusive access, early access, special pricing
+
+### 3. Advanced Analytics
+- **Real-time Metrics**: Live business performance data
+- **Predictive Analytics**: Sales forecasting, trend analysis
+- **Customer Insights**: Behavior patterns, preferences
+- **Performance Tracking**: KPI monitoring and alerts
+
+### 4. Integration Capabilities
+- **Payment Processing**: Multiple payment gateway support
+- **Accounting Software**: QuickBooks, Xero integration
+- **E-commerce Platforms**: Shopify, WooCommerce sync
+- **Cloud Storage**: Google Drive, Dropbox backup
+
+## � Business Impact
+
+### For Local Merchants
+- **Increased Efficiency**: Streamlined invoice and customer management
+- **Better Customer Relationships**: Loyalty programs and personalized service
+- **Improved Cash Flow**: Faster invoicing and payment tracking
+- **Business Growth**: Data-driven insights for expansion
+- **Professional Image**: Branded, professional invoices and reports
+
+### Competitive Advantages
+- **Category Specialization**: Tailored features for specific business types
+- **Modern UI/UX**: Professional, intuitive interface
+- **Scalability**: Grows with business needs
+- **Mobile-First**: Optimized for mobile devices
+- **Offline Capability**: Works without internet connection
+
+## 🔧 Technical Implementation
+
+### State Management
+```dart
+// Provider pattern for state management
+class SettingsProvider extends ChangeNotifier {
+  BusinessCategory _selectedCategory = BusinessCategory.jewelryStore;
+  
+  Future<BusinessCategory> getBusinessCategory() async {
+    // Implementation for category management
+  }
+}
 ```
 
-### Adding New Business Categories
-
-1. **Update BusinessCategory enum** in `lib/models/business_category.dart`
-2. **Add category-specific fields** in `CategoryFieldDefinitions`
-3. **Update UI components** to handle new category
-4. **Test thoroughly** with sample data
-
-### Customization
-
-#### Theme Customization
-Edit `lib/utils/theme.dart` to modify:
-- Colors
-- Typography
-- Spacing
-- Border radius
-
-#### Business Logic
-- **Tax Calculations**: Modify in `EnhancedInvoiceProvider`
-- **Validation Rules**: Update in form widgets
-- **Export Formats**: Extend in provider classes
-
-## 📊 Analytics & Reporting
-
-### Dashboard Features
-- **Revenue Charts**: Monthly revenue visualization
-- **Statistics Cards**: Key business metrics
-- **Recent Invoices**: Latest activity
-- **Business Insights**: AI-powered recommendations
-
-### Export Options
-- **PDF**: Professional invoice format
-- **CSV**: Data analysis and backup
-- **Excel**: Advanced reporting
-- **JSON**: API integration
-
-## 🔒 Security & Privacy
-
-### Data Protection
-- **Local Storage**: All data stored locally
-- **Encryption**: Optional data encryption
-- **Backup Security**: Encrypted backup files
-- **No Cloud Sync**: Complete privacy control
-
-### Permissions
-- **Storage**: For PDF/CSV export
-- **Camera**: For barcode scanning (future)
-- **Notifications**: For payment reminders
-
-## 🧪 Testing
-
-### Unit Tests
-```bash
-flutter test
+### Category-Specific Models
+```dart
+// Comprehensive business category models
+enum BusinessCategory {
+  jewelryStore,
+  restaurantCafe,
+  clothingStore,
+  electronicsStore,
+  hardwareStore,
+  bakery,
+  stationeryStore,
+  groceryStore,
+}
 ```
 
-### Widget Tests
-```bash
-flutter test test/widget_test.dart
+### Dynamic UI Components
+```dart
+// Category-specific color schemes
+Color _getCategoryColor() {
+  switch (_selectedCategory) {
+    case BusinessCategory.jewelryStore:
+      return AppTheme.rausch;
+    case BusinessCategory.restaurantCafe:
+      return AppTheme.babu;
+    // ... other categories
+  }
+}
 ```
 
-### Integration Tests
+## 🎯 Future Enhancements
+
+### Planned Features
+- **Multi-language Support**: Internationalization for global markets
+- **Advanced AI**: Predictive analytics and smart recommendations
+- **Blockchain Integration**: Secure, transparent transactions
+- **AR/VR Features**: Virtual product visualization
+- **Voice Commands**: Hands-free operation
+- **IoT Integration**: Smart inventory and sensor data
+
+### Scalability Roadmap
+- **Multi-location Support**: Chain store management
+- **Franchise Management**: Multi-business owner support
+- **API Ecosystem**: Third-party integrations
+- **White-label Solutions**: Customizable for resellers
+- **Enterprise Features**: Advanced security and compliance
+
+## 📱 Getting Started
+
+### Prerequisites
+- Flutter 3.x or higher
+- Dart 3.x or higher
+- Android Studio / VS Code
+- Android SDK / Xcode (for mobile development)
+
+### Installation
 ```bash
-flutter drive --target=test_driver/app.dart
+# Clone the repository
+git clone https://github.com/your-username/invoice-app.git
+
+# Navigate to project directory
+cd invoice-app
+
+# Install dependencies
+flutter pub get
+
+# Run the app
+flutter run
 ```
 
-## 📦 Deployment
-
-### Android
-```bash
-flutter build apk --release
-```
-
-### iOS
-```bash
-flutter build ios --release
-```
-
-### Web
-```bash
-flutter build web --release
-```
+### Configuration
+1. **Select Business Category**: Choose your business type during setup
+2. **Configure Business Profile**: Add company information and branding
+3. **Set Up Categories**: Configure product categories and attributes
+4. **Import Data**: Import existing customer and product data
+5. **Customize Settings**: Adjust notification and privacy settings
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
+We welcome contributions from the community! Please read our contributing guidelines and code of conduct before submitting pull requests.
 
-### Code Style
-- Follow Flutter/Dart conventions
-- Use meaningful variable names
-- Add comments for complex logic
-- Maintain consistent formatting
+### Development Guidelines
+- Follow Flutter best practices
+- Maintain category-specific functionality
+- Ensure responsive design
+- Write comprehensive tests
+- Document new features
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **Airbnb**: For design inspiration
-- **Flutter Team**: For the amazing framework
-- **Open Source Community**: For the excellent packages
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## 📞 Support
 
 For support and questions:
 - **Email**: support@invoice-app.com
-- **Documentation**: [docs.invoice-app.com](https://docs.invoice-app.com)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/invoice-app/issues)
+- **Documentation**: https://docs.invoice-app.com
+- **Community**: https://community.invoice-app.com
 
-## 🔄 Changelog
+## � Acknowledgments
 
-### Version 1.0.0
-- Initial release
-- 12 business categories
-- Complete invoice management
-- Dashboard with analytics
-- PDF export functionality
-- SQLite database
-- Airbnb-inspired design
+- **Airbnb Design Team**: Inspiration for the design system
+- **Flutter Team**: Excellent framework and documentation
+- **Open Source Community**: Libraries and tools that made this possible
 
 ---
 
-**Built with ❤️ for local merchants**
+**Invoice App** - Empowering local merchants with professional invoice management solutions.

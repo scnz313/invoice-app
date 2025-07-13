@@ -5,9 +5,10 @@ import '../providers/enhanced_invoice_provider.dart';
 import '../models/business_category.dart';
 import '../theme/app_theme.dart';
 import 'enhanced_dashboard_screen.dart';
-import 'invoice_list_screen.dart';
-import 'client_list_screen.dart';
+import 'enhanced_invoice_list_screen.dart';
+import 'enhanced_customer_screen.dart';
 import 'category_product_management_screen.dart';
+import 'enhanced_settings_screen.dart';
 import 'category_specific_screens.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -35,10 +36,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   List<Widget> get _screens {
     return [
       const EnhancedDashboardScreen(),
-      const InvoiceListScreen(),
-      const ClientListScreen(),
+      const EnhancedInvoiceListScreen(),
+      const EnhancedCustomerScreen(),
       const CategoryProductManagementScreen(),
       _buildReportsScreen(),
+      const EnhancedSettingsScreen(),
     ];
   }
 
@@ -78,6 +80,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               _buildNavItem(2, Icons.people, 'Customers'),
               _buildNavItem(3, Icons.inventory_2, 'Products'),
               _buildNavItem(4, Icons.analytics, 'Reports'),
+              _buildNavItem(5, Icons.settings, 'Settings'),
             ],
           ),
         ),
