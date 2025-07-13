@@ -7,6 +7,8 @@ import 'screens/category_selection_screen.dart';
 import 'screens/business_setup_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/invoice_creation_screen.dart';
+import 'screens/grocery_invoice_creation_screen.dart';
+import 'screens/inventory_management_screen.dart';
 import 'utils/theme.dart';
 import 'utils/logger.dart';
 

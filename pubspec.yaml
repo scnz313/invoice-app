@@ -47,8 +47,9 @@ dependencies:
   pdf: ^3.10.7
   printing: ^5.11.1
 
-  # Barcode Scanning (for future features)
-  # mobile_scanner: ^3.5.6
+  # Barcode Scanning
+  mobile_scanner: ^3.5.6
+  camera: ^0.10.5+5
 
   # Local Notifications
   flutter_local_notifications: ^16.3.0
