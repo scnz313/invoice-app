@@ -38,7 +38,7 @@ class RecentInvoiceCard extends StatelessWidget {
                     children: [
                       Text(
                         invoice.invoiceNumber,
-                        style: AirbnbTheme.bodyStyle.copyWith(
+                        style: AppTheme.body1.copyWith(
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                         ),
@@ -46,8 +46,8 @@ class RecentInvoiceCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         invoice.customer.name,
-                        style: AirbnbTheme.bodyStyle.copyWith(
-                          color: AirbnbTheme.textSecondary,
+                        style: AppTheme.body1.copyWith(
+                          color: AppTheme.foggy,
                           fontSize: 14,
                         ),
                       ),
@@ -66,18 +66,18 @@ class RecentInvoiceCard extends StatelessWidget {
                   children: [
                     Text(
                       'Amount',
-                      style: AirbnbTheme.bodyStyle.copyWith(
-                        color: AirbnbTheme.textSecondary,
+                      style: AppTheme.body1.copyWith(
+                        color: AppTheme.foggy,
                         fontSize: 12,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       '₹${invoice.totals.grandTotal.toStringAsFixed(2)}',
-                      style: AirbnbTheme.headlineStyle.copyWith(
+                      style: AppTheme.headline4.copyWith(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
-                        color: AirbnbTheme.textPrimary,
+                        color: AppTheme.hof,
                       ),
                     ),
                   ],
@@ -87,15 +87,15 @@ class RecentInvoiceCard extends StatelessWidget {
                   children: [
                     Text(
                       'Date',
-                      style: AirbnbTheme.bodyStyle.copyWith(
-                        color: AirbnbTheme.textSecondary,
+                      style: AppTheme.body1.copyWith(
+                        color: AppTheme.foggy,
                         fontSize: 12,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       _formatDate(invoice.createdAt),
-                      style: AirbnbTheme.bodyStyle.copyWith(
+                      style: AppTheme.body1.copyWith(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
@@ -109,14 +109,14 @@ class RecentInvoiceCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AirbnbTheme.backgroundColor,
+                  color: AppTheme.ghost,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   '${invoice.items.length} item${invoice.items.length > 1 ? 's' : ''}',
-                  style: AirbnbTheme.bodyStyle.copyWith(
+                  style: AppTheme.body1.copyWith(
                     fontSize: 12,
-                    color: AirbnbTheme.textSecondary,
+                    color: AppTheme.foggy,
                   ),
                 ),
               ),
@@ -182,7 +182,7 @@ class RecentInvoiceCard extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             text,
-            style: AirbnbTheme.bodyStyle.copyWith(
+            style: AppTheme.body1.copyWith(
               fontSize: 12,
               fontWeight: FontWeight.w500,
               color: color,

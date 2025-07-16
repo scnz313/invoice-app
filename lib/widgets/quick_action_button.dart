@@ -55,10 +55,10 @@ class QuickActionButton extends StatelessWidget {
                 const SizedBox(height: 12),
                 Text(
                   title,
-                  style: AirbnbTheme.bodyStyle.copyWith(
+                  style: AppTheme.body1.copyWith(
                     fontWeight: FontWeight.w500,
                     fontSize: 14,
-                    color: AirbnbTheme.textPrimary,
+                    color: AppTheme.hof,
                   ),
                   textAlign: TextAlign.center,
                 ),

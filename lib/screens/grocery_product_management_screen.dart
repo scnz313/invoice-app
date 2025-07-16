@@ -224,7 +224,7 @@ class _GroceryProductManagementScreenState extends State<GroceryProductManagemen
           children: [
             Text(
               'Basic Information',
-              style: AirbnbTheme.headlineStyle.copyWith(
+              style: AppTheme.headline4.copyWith(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
@@ -342,7 +342,7 @@ class _GroceryProductManagementScreenState extends State<GroceryProductManagemen
           children: [
             Text(
               'Pricing Information',
-              style: AirbnbTheme.headlineStyle.copyWith(
+              style: AppTheme.headline4.copyWith(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
@@ -428,7 +428,7 @@ class _GroceryProductManagementScreenState extends State<GroceryProductManagemen
           children: [
             Text(
               'Inventory Management',
-              style: AirbnbTheme.headlineStyle.copyWith(
+              style: AppTheme.headline4.copyWith(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
@@ -577,7 +577,7 @@ class _GroceryProductManagementScreenState extends State<GroceryProductManagemen
           children: [
             Text(
               'Supplier Information',
-              style: AirbnbTheme.headlineStyle.copyWith(
+              style: AppTheme.headline4.copyWith(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
@@ -615,7 +615,7 @@ class _GroceryProductManagementScreenState extends State<GroceryProductManagemen
           children: [
             Text(
               'Product Settings',
-              style: AirbnbTheme.headlineStyle.copyWith(
+              style: AppTheme.headline4.copyWith(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),

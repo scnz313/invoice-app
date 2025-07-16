@@ -70,7 +70,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AirbnbTheme.backgroundColor,
+      backgroundColor: AppTheme.ghost,
       body: Consumer2<EnhancedInvoiceProvider, SettingsProvider>(
         builder: (context, invoiceProvider, settingsProvider, child) {
           return CustomScrollView(
@@ -80,14 +80,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                 expandedHeight: 120,
                 floating: false,
                 pinned: true,
-                backgroundColor: AirbnbTheme.primaryColor,
+                backgroundColor: AppTheme.rausch,
                 elevation: 0,
                 flexibleSpace: FlexibleSpaceBar(
                   title: FadeTransition(
                     opacity: _fadeAnimation,
                     child: Text(
                       'Dashboard',
-                      style: AirbnbTheme.headlineStyle.copyWith(
+                      style: AppTheme.headline4.copyWith(
                         color: Colors.white,
                         fontSize: 24,
                       ),
@@ -99,8 +99,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          AirbnbTheme.primaryColor,
-                          AirbnbTheme.primaryColor.withOpacity(0.8),
+                          AppTheme.rausch,
+                          AppTheme.rausch.withOpacity(0.8),
                         ],
                       ),
                     ),
@@ -221,7 +221,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ),
                 child: Icon(
                   businessCategory?.icon ?? Icons.business,
-                  color: businessCategory?.color ?? AirbnbTheme.primaryColor,
+                  color: businessCategory?.color ?? AppTheme.rausch,
                   size: 30,
                 ),
               ),
@@ -232,15 +232,15 @@ class _DashboardScreenState extends State<DashboardScreen>
                   children: [
                     Text(
                       'Welcome back!',
-                      style: AirbnbTheme.bodyStyle.copyWith(
-                        color: AirbnbTheme.textSecondary,
+                      style: AppTheme.body1.copyWith(
+                        color: AppTheme.foggy,
                         fontSize: 14,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       businessName,
-                      style: AirbnbTheme.headlineStyle.copyWith(
+                      style: AppTheme.headline4.copyWith(
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
                       ),
@@ -249,7 +249,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       const SizedBox(height: 4),
                       Text(
                         businessCategory.displayName,
-                        style: AirbnbTheme.bodyStyle.copyWith(
+                        style: AppTheme.body1.copyWith(
                           color: businessCategory.color,
                           fontWeight: FontWeight.w500,
                         ),
@@ -263,8 +263,8 @@ class _DashboardScreenState extends State<DashboardScreen>
           const SizedBox(height: 16),
           Text(
             'Here\'s what\'s happening with your business today.',
-            style: AirbnbTheme.bodyStyle.copyWith(
-              color: AirbnbTheme.textSecondary,
+            style: AppTheme.body1.copyWith(
+              color: AppTheme.foggy,
             ),
           ),
         ],
@@ -295,7 +295,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           children: [
             Text(
               'Statistics',
-              style: AirbnbTheme.headlineStyle.copyWith(
+              style: AppTheme.headline4.copyWith(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
@@ -313,7 +313,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   title: 'Total Invoices',
                   value: totalInvoices.toString(),
                   icon: Icons.receipt_long,
-                  color: AirbnbTheme.primaryColor,
+                  color: AppTheme.rausch,
                   trend: '+12%',
                   trendUp: true,
                 ),
@@ -355,7 +355,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       children: [
         Text(
           'Statistics',
-          style: AirbnbTheme.headlineStyle.copyWith(
+          style: AppTheme.headline4.copyWith(
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
@@ -386,7 +386,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           const SizedBox(height: 16),
           Text(
             'Failed to load statistics',
-            style: AirbnbTheme.bodyStyle.copyWith(
+            style: AppTheme.body1.copyWith(
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -475,7 +475,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             children: [
               Text(
                 'Monthly Revenue',
-                style: AirbnbTheme.headlineStyle.copyWith(
+                style: AppTheme.headline4.copyWith(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                 ),
@@ -523,9 +523,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                                 axisSide: meta.axisSide,
                                 child: Text(
                                   month.substring(5), // Show only month
-                                  style: AirbnbTheme.bodyStyle.copyWith(
+                                  style: AppTheme.body1.copyWith(
                                     fontSize: 12,
-                                    color: AirbnbTheme.textSecondary,
+                                    color: AppTheme.foggy,
                                   ),
                                 ),
                               );
@@ -543,9 +543,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                               axisSide: meta.axisSide,
                               child: Text(
                                 '₹${value.toInt()}',
-                                style: AirbnbTheme.bodyStyle.copyWith(
+                                style: AppTheme.body1.copyWith(
                                   fontSize: 12,
-                                  color: AirbnbTheme.textSecondary,
+                                  color: AppTheme.foggy,
                                 ),
                               ),
                             );
@@ -571,8 +571,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                         isCurved: true,
                         gradient: LinearGradient(
                           colors: [
-                            AirbnbTheme.primaryColor,
-                            AirbnbTheme.primaryColor.withOpacity(0.5),
+                            AppTheme.rausch,
+                            AppTheme.rausch.withOpacity(0.5),
                           ],
                         ),
                         barWidth: 3,
@@ -582,7 +582,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                           getDotPainter: (spot, percent, barData, index) {
                             return FlDotCirclePainter(
                               radius: 4,
-                              color: AirbnbTheme.primaryColor,
+                              color: AppTheme.rausch,
                               strokeWidth: 2,
                               strokeColor: Colors.white,
                             );
@@ -592,8 +592,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                           show: true,
                           gradient: LinearGradient(
                             colors: [
-                              AirbnbTheme.primaryColor.withOpacity(0.3),
-                              AirbnbTheme.primaryColor.withOpacity(0.1),
+                              AppTheme.rausch.withOpacity(0.3),
+                              AppTheme.rausch.withOpacity(0.1),
                             ],
                           ),
                         ),
@@ -647,8 +647,8 @@ class _DashboardScreenState extends State<DashboardScreen>
           const SizedBox(height: 16),
           Text(
             'No revenue data available',
-            style: AirbnbTheme.bodyStyle.copyWith(
-              color: AirbnbTheme.textSecondary,
+            style: AppTheme.body1.copyWith(
+              color: AppTheme.foggy,
             ),
           ),
         ],
@@ -668,8 +668,8 @@ class _DashboardScreenState extends State<DashboardScreen>
           const SizedBox(height: 16),
           Text(
             'No revenue data available',
-            style: AirbnbTheme.bodyStyle.copyWith(
-              color: AirbnbTheme.textSecondary,
+            style: AppTheme.body1.copyWith(
+              color: AppTheme.foggy,
             ),
           ),
         ],
@@ -688,7 +688,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           children: [
             Text(
               'Quick Actions',
-              style: AirbnbTheme.headlineStyle.copyWith(
+              style: AppTheme.headline4.copyWith(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
@@ -705,7 +705,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 QuickActionButton(
                   title: isGroceryStore ? 'Scan & Invoice' : 'New Invoice',
                   icon: isGroceryStore ? Icons.qr_code_scanner : Icons.add_circle_outline,
-                  color: AirbnbTheme.primaryColor,
+                  color: AppTheme.rausch,
                   onTap: () {
                     if (isGroceryStore) {
                       Navigator.push(
@@ -776,7 +776,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           children: [
             Text(
               'Recent Invoices',
-              style: AirbnbTheme.headlineStyle.copyWith(
+              style: AppTheme.headline4.copyWith(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
@@ -787,8 +787,8 @@ class _DashboardScreenState extends State<DashboardScreen>
               },
               child: Text(
                 'View All',
-                style: AirbnbTheme.bodyStyle.copyWith(
-                  color: AirbnbTheme.primaryColor,
+                style: AppTheme.body1.copyWith(
+                  color: AppTheme.rausch,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -808,15 +808,15 @@ class _DashboardScreenState extends State<DashboardScreen>
                 const SizedBox(height: 16),
                 Text(
                   'No invoices yet',
-                  style: AirbnbTheme.bodyStyle.copyWith(
-                    color: AirbnbTheme.textSecondary,
+                  style: AppTheme.body1.copyWith(
+                    color: AppTheme.foggy,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Create your first invoice to get started',
-                  style: AirbnbTheme.bodyStyle.copyWith(
-                    color: AirbnbTheme.textSecondary,
+                  style: AppTheme.body1.copyWith(
+                    color: AppTheme.foggy,
                     fontSize: 14,
                   ),
                 ),
@@ -839,7 +839,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         children: [
           Text(
             'Business Insights',
-            style: AirbnbTheme.headlineStyle.copyWith(
+            style: AppTheme.headline4.copyWith(
               fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
@@ -856,7 +856,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             icon: Icons.people,
             title: 'Customer Growth',
             description: 'You\'ve added 8 new customers this week',
-            color: AirbnbTheme.primaryColor,
+            color: AppTheme.rausch,
           ),
           const SizedBox(height: 16),
           _buildInsightItem(
@@ -898,15 +898,15 @@ class _DashboardScreenState extends State<DashboardScreen>
             children: [
               Text(
                 title,
-                style: AirbnbTheme.bodyStyle.copyWith(
+                style: AppTheme.body1.copyWith(
                   fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 description,
-                style: AirbnbTheme.bodyStyle.copyWith(
-                  color: AirbnbTheme.textSecondary,
+                style: AppTheme.body1.copyWith(
+                  color: AppTheme.foggy,
                   fontSize: 14,
                 ),
               ),

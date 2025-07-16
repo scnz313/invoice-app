@@ -72,7 +72,7 @@ class StatCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           trend!,
-                          style: AirbnbTheme.bodyStyle.copyWith(
+                          style: AppTheme.body1.copyWith(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                             color: (trendUp ?? true) ? Colors.green : Colors.red,
@@ -86,18 +86,18 @@ class StatCard extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               title,
-              style: AirbnbTheme.bodyStyle.copyWith(
-                color: AirbnbTheme.textSecondary,
+              style: AppTheme.body1.copyWith(
+                color: AppTheme.foggy,
                 fontSize: 14,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               value,
-              style: AirbnbTheme.headlineStyle.copyWith(
+              style: AppTheme.headline4.copyWith(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
-                color: AirbnbTheme.textPrimary,
+                color: AppTheme.hof,
               ),
             ),
           ],

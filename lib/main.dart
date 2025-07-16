@@ -50,10 +50,10 @@ class InvoiceApp extends StatelessWidget {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Scaffold(
-                    backgroundColor: AirbnbTheme.backgroundColor,
+                    backgroundColor: AppTheme.ghost,
                     body: Center(
                       child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(AirbnbTheme.primaryColor),
+                        valueColor: AlwaysStoppedAnimation<Color>(AppTheme.rausch),
                       ),
                     ),
                   );
