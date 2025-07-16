@@ -34,7 +34,7 @@ class QuickStatsCard extends StatelessWidget {
         const SizedBox(height: AppTheme.spacing8),
         Text(
           value,
-          style: Theme.of(context).textTheme.headline6?.copyWith(
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: color,
                 fontWeight: FontWeight.bold,
               ) ?? TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 18),
@@ -42,7 +42,7 @@ class QuickStatsCard extends StatelessWidget {
         const SizedBox(height: AppTheme.spacing4),
         Text(
           label,
-          style: Theme.of(context).textTheme.caption?.copyWith(
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: AppTheme.foggy,
               ) ?? TextStyle(color: AppTheme.foggy, fontSize: 12),
         ),

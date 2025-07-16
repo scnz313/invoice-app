@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../models/enhanced_invoice.dart';
 import '../models/business_category.dart';
+import '../models/client.dart';
 import '../services/database_service.dart';
 import '../utils/logger.dart';
 
@@ -11,7 +12,7 @@ class EnhancedInvoiceProvider with ChangeNotifier {
   final Uuid _uuid = const Uuid();
 
   List<EnhancedInvoice> _invoices = [];
-  List<Customer> _customers = [];
+  List<Client> _clients = [];
   List<Product> _products = [];
   BusinessSettings? _businessSettings;
   bool _isLoading = false;
@@ -19,7 +20,7 @@ class EnhancedInvoiceProvider with ChangeNotifier {
 
   // Getters
   List<EnhancedInvoice> get invoices => _invoices;
-  List<Customer> get customers => _customers;
+  List<Client> get clients => _clients;
   List<Product> get products => _products;
   BusinessSettings? get businessSettings => _businessSettings;
   bool get isLoading => _isLoading;
@@ -213,7 +214,7 @@ class EnhancedInvoiceProvider with ChangeNotifier {
 
   EnhancedInvoice createDraftInvoice({
     required BusinessCategory category,
-    required Customer customer,
+    required Client client,
     List<InvoiceItem>? items,
     List<CategorySpecificField>? categoryFields,
   }) {
@@ -227,7 +228,7 @@ class EnhancedInvoiceProvider with ChangeNotifier {
       createdAt: now,
       dueDate: dueDate,
       status: InvoiceStatus.draft,
-      customer: customer,
+      client: client,
       items: items ?? [],
       categoryFields: categoryFields ?? CategoryFieldDefinitions.getFieldsForCategory(category),
       totals: InvoiceTotals(
@@ -315,25 +316,25 @@ class EnhancedInvoiceProvider with ChangeNotifier {
 
   // Calculation helpers
   InvoiceTotals calculateTotals(List<InvoiceItem> items) {
-    double subtotal = 0.0;
-    double discountTotal = 0.0;
-    double taxableAmount = 0.0;
-    double taxTotal = 0.0;
+    double subtotal = 0;
+    double taxTotal = 0;
+    double discountTotal = 0;
 
-    for (var item in items) {
-      subtotal += item.subtotal;
-      discountTotal += item.discountAmount;
-      taxableAmount += item.taxableAmount;
+    for (final item in items) {
+      subtotal += item.unitPrice * item.quantity;
       taxTotal += item.taxAmount;
+      discountTotal += item.discount;
     }
+
+    final taxableAmount = subtotal - discountTotal;
+    final grandTotal = taxableAmount + taxTotal;
 
     return InvoiceTotals(
       subtotal: subtotal,
       discountTotal: discountTotal,
       taxableAmount: taxableAmount,
       taxTotal: taxTotal,
-      grandTotal: taxableAmount + taxTotal,
-      currency: _businessSettings?.currency ?? 'INR',
+      grandTotal: grandTotal,
     );
   }
 
@@ -344,9 +345,9 @@ class EnhancedInvoiceProvider with ChangeNotifier {
     final lowercaseQuery = query.toLowerCase();
     return _invoices.where((invoice) {
       return invoice.invoiceNumber.toLowerCase().contains(lowercaseQuery) ||
-             invoice.customer.name.toLowerCase().contains(lowercaseQuery) ||
-             invoice.customer.email?.toLowerCase().contains(lowercaseQuery) == true ||
-             invoice.customer.phone?.contains(query) == true;
+             invoice.client.name.toLowerCase().contains(lowercaseQuery) ||
+             invoice.client.email?.toLowerCase().contains(lowercaseQuery) == true ||
+             invoice.client.phone?.contains(query) == true;
     }).toList();
   }
 
@@ -360,14 +361,14 @@ class EnhancedInvoiceProvider with ChangeNotifier {
     }).toList();
   }
 
-  List<Customer> searchCustomers(String query) {
-    if (query.isEmpty) return _customers;
+  List<Client> searchClients(String query) {
+    if (query.isEmpty) return _clients;
     
     final lowercaseQuery = query.toLowerCase();
-    return _customers.where((customer) {
-      return customer.name.toLowerCase().contains(lowercaseQuery) ||
-             customer.email?.toLowerCase().contains(lowercaseQuery) == true ||
-             customer.phone?.contains(query) == true;
+    return _clients.where((client) {
+      return client.name.toLowerCase().contains(lowercaseQuery) ||
+             client.email?.toLowerCase().contains(lowercaseQuery) == true ||
+             client.phone?.contains(query) == true;
     }).toList();
   }
 
@@ -433,7 +434,7 @@ class EnhancedInvoiceProvider with ChangeNotifier {
       csvData.add([
         'Invoice Number',
         'Date',
-        'Customer',
+        'Client',
         'Status',
         'Subtotal',
         'Tax',
@@ -446,7 +447,7 @@ class EnhancedInvoiceProvider with ChangeNotifier {
         csvData.add([
           invoice.invoiceNumber,
           invoice.createdAt.toIso8601String(),
-          invoice.customer.name,
+          invoice.client.name,
           invoice.status.name,
           invoice.totals.subtotal.toString(),
           invoice.totals.taxTotal.toString(),
@@ -492,6 +493,28 @@ class EnhancedInvoiceProvider with ChangeNotifier {
     } catch (e) {
       Logger.error('Failed to export customers to CSV', 'EnhancedInvoiceProvider', e);
       rethrow;
+    }
+  }
+
+  Future<String> exportClientsToCSV() async {
+    try {
+      final csvData = <List<dynamic>>[
+        ['Name', 'Email', 'Phone', 'Address'],
+      ];
+      
+      for (var client in _clients) {
+        csvData.add([
+          client.name,
+          client.email,
+          client.phone,
+          client.address,
+        ]);
+      }
+      
+      return const ListToCsvConverter().convert(csvData);
+    } catch (e) {
+      Logger.error('Failed to export clients to CSV', 'EnhancedInvoiceProvider', e);
+      return '';
     }
   }
 
@@ -608,6 +631,15 @@ class EnhancedInvoiceProvider with ChangeNotifier {
         _businessSettings = settings;
       }
       
+      // Import clients
+      if (data['clients'] != null) {
+        for (var clientData in data['clients']) {
+          final client = Client.fromJson(clientData);
+          await _databaseService.insertClient(client);
+          _clients.add(client);
+        }
+      }
+      
       notifyListeners();
     } catch (e) {
       Logger.error('Failed to import data', 'EnhancedInvoiceProvider', e);
@@ -615,6 +647,11 @@ class EnhancedInvoiceProvider with ChangeNotifier {
     } finally {
       _setLoading(false);
     }
+  }
+
+  Future<EnhancedInvoice?> getLastInvoice() async {
+    if (_invoices.isEmpty) return null;
+    return _invoices.last;
   }
 }
 

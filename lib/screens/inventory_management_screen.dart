@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/grocery_product.dart';
 import '../services/inventory_service.dart';
-import '../utils/constants.dart';
 import '../utils/logger.dart';
+import '../theme/app_theme.dart';
 
 class InventoryManagementScreen extends StatefulWidget {
   const InventoryManagementScreen({super.key});
@@ -73,7 +73,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: const Text(
           'Inventory Management',
@@ -82,7 +82,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen>
             fontWeight: FontWeight.w600,
           ),
         ),
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppTheme.primaryColor,
         elevation: 0,
         actions: [
           IconButton(
@@ -258,8 +258,8 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen>
           });
         },
         backgroundColor: Colors.grey[200],
-        selectedColor: AppColors.primary.withOpacity(0.2),
-        checkmarkColor: AppColors.primary,
+        selectedColor: AppTheme.primaryColor.withOpacity(0.2),
+        checkmarkColor: AppTheme.primaryColor,
       ),
     );
   }
@@ -723,7 +723,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen>
           children: [
             Row(
               children: [
-                const Icon(Icons.assessment, color: AppColors.primary),
+                const Icon(Icons.assessment, color: AppTheme.primaryColor),
                 const SizedBox(width: 8),
                 const Text(
                   'Inventory Summary',
@@ -750,7 +750,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen>
                     'Total Products',
                     report.totalProducts.toString(),
                     Icons.inventory,
-                    AppColors.primary,
+                    AppTheme.primaryColor,
                   ),
                 ),
                 Expanded(
@@ -983,7 +983,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen>
                   '₹${product.unitPrice.toStringAsFixed(2)}',
                   style: const TextStyle(
                     fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
+                    color: AppTheme.primaryColor,
                   ),
                 ),
               ],

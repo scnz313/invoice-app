@@ -3,9 +3,8 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../models/grocery_product.dart';
 import '../services/inventory_service.dart';
-import '../utils/constants.dart';
-import '../utils/theme.dart';
 import '../utils/logger.dart';
+import '../theme/app_theme.dart';
 
 class GroceryProductManagementScreen extends StatefulWidget {
   final GroceryProduct? product; // For editing existing product
@@ -102,16 +101,16 @@ class _GroceryProductManagementScreenState extends State<GroceryProductManagemen
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: Text(
           widget.product != null ? 'Edit Product' : 'Add New Product',
-          style: const TextStyle(
+          style: AppTheme.headline4.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.w600,
           ),
         ),
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppTheme.primaryColor,
         elevation: 0,
         actions: [
           if (widget.product != null)
@@ -224,7 +223,7 @@ class _GroceryProductManagementScreenState extends State<GroceryProductManagemen
           children: [
             Text(
               'Basic Information',
-              style: AirbnbTheme.headlineStyle.copyWith(
+              style: AppTheme.headline4.copyWith(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
@@ -342,7 +341,7 @@ class _GroceryProductManagementScreenState extends State<GroceryProductManagemen
           children: [
             Text(
               'Pricing Information',
-              style: AirbnbTheme.headlineStyle.copyWith(
+              style: AppTheme.headline4.copyWith(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
@@ -428,7 +427,7 @@ class _GroceryProductManagementScreenState extends State<GroceryProductManagemen
           children: [
             Text(
               'Inventory Management',
-              style: AirbnbTheme.headlineStyle.copyWith(
+              style: AppTheme.headline4.copyWith(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
@@ -577,7 +576,7 @@ class _GroceryProductManagementScreenState extends State<GroceryProductManagemen
           children: [
             Text(
               'Supplier Information',
-              style: AirbnbTheme.headlineStyle.copyWith(
+              style: AppTheme.headline4.copyWith(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
@@ -615,7 +614,7 @@ class _GroceryProductManagementScreenState extends State<GroceryProductManagemen
           children: [
             Text(
               'Product Settings',
-              style: AirbnbTheme.headlineStyle.copyWith(
+              style: AppTheme.headline4.copyWith(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
@@ -644,7 +643,7 @@ class _GroceryProductManagementScreenState extends State<GroceryProductManagemen
           child: ElevatedButton(
             onPressed: _saveProduct,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              backgroundColor: AppTheme.primaryColor,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),

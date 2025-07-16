@@ -4,10 +4,9 @@ import '../providers/enhanced_invoice_provider.dart';
 import '../providers/settings_provider.dart';
 import '../models/enhanced_invoice.dart';
 import '../models/business_category.dart';
-import '../utils/theme.dart';
 import '../utils/logger.dart';
-import '../widgets/airbnb_card.dart';
 import '../widgets/category_field_widget.dart';
+import '../theme/app_theme.dart';
 
 class InvoiceCreationScreen extends StatefulWidget {
   final EnhancedInvoice? editingInvoice;
@@ -137,16 +136,16 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AirbnbTheme.backgroundColor,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: Text(
           widget.editingInvoice != null ? 'Edit Invoice' : 'Create Invoice',
-          style: AirbnbTheme.headlineStyle.copyWith(
+          style: AppTheme.headline4.copyWith(
             color: Colors.white,
             fontSize: 20,
           ),
         ),
-        backgroundColor: AirbnbTheme.primaryColor,
+        backgroundColor: AppTheme.primaryColor,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
@@ -245,7 +244,7 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
   }
 
   Widget _buildCustomerSection() {
-    return AirbnbCard(
+    return Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -253,13 +252,13 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
             children: [
               Icon(
                 Icons.person_outline,
-                color: AirbnbTheme.primaryColor,
+                color: AppTheme.primaryColor,
                 size: 24,
               ),
               const SizedBox(width: 12),
               Text(
                 'Customer Information',
-                style: AirbnbTheme.headlineStyle.copyWith(
+                style: AppTheme.headline4.copyWith(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                 ),
@@ -356,7 +355,7 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
   }
 
   Widget _buildInvoiceDetailsSection() {
-    return AirbnbCard(
+    return Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -364,13 +363,13 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
             children: [
               Icon(
                 Icons.receipt_long,
-                color: AirbnbTheme.primaryColor,
+                color: AppTheme.primaryColor,
                 size: 24,
               ),
               const SizedBox(width: 12),
               Text(
                 'Invoice Details',
-                style: AirbnbTheme.headlineStyle.copyWith(
+                style: AppTheme.headline4.copyWith(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                 ),
@@ -434,7 +433,7 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
                     ),
                     child: Text(
                       '${_dueDate.day}/${_dueDate.month}/${_dueDate.year}',
-                      style: AirbnbTheme.bodyStyle,
+                      style: AppTheme.body1,
                     ),
                   ),
                 ),
@@ -468,7 +467,7 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
   Widget _buildCategoryFieldsSection() {
     if (_categoryFields.isEmpty) return const SizedBox.shrink();
 
-    return AirbnbCard(
+    return Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -482,7 +481,7 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
               const SizedBox(width: 12),
               Text(
                 '${_selectedCategory!.displayName} Specific Fields',
-                style: AirbnbTheme.headlineStyle.copyWith(
+                style: AppTheme.headline4.copyWith(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                 ),
@@ -508,7 +507,7 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
   }
 
   Widget _buildItemsSection(EnhancedInvoiceProvider invoiceProvider) {
-    return AirbnbCard(
+    return Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -519,13 +518,13 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
                 children: [
                   Icon(
                     Icons.inventory_2_outlined,
-                    color: AirbnbTheme.primaryColor,
+                    color: AppTheme.primaryColor,
                     size: 24,
                   ),
                   const SizedBox(width: 12),
                   Text(
                     'Invoice Items',
-                    style: AirbnbTheme.headlineStyle.copyWith(
+                    style: AppTheme.headline4.copyWith(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
@@ -537,7 +536,7 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
                 icon: const Icon(Icons.add),
                 label: const Text('Add Item'),
                 style: TextButton.styleFrom(
-                  foregroundColor: AirbnbTheme.primaryColor,
+                  foregroundColor: AppTheme.primaryColor,
                 ),
               ),
             ],
@@ -556,15 +555,15 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
                   const SizedBox(height: 16),
                   Text(
                     'No items added',
-                    style: AirbnbTheme.bodyStyle.copyWith(
-                      color: AirbnbTheme.textSecondary,
+                    style: AppTheme.body1.copyWith(
+                      color: AppTheme.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Add items to your invoice',
-                    style: AirbnbTheme.bodyStyle.copyWith(
-                      color: AirbnbTheme.textSecondary,
+                    style: AppTheme.body1.copyWith(
+                      color: AppTheme.textSecondary,
                       fontSize: 14,
                     ),
                   ),
@@ -604,7 +603,7 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
               Expanded(
                 child: Text(
                   item.name,
-                  style: AirbnbTheme.bodyStyle.copyWith(
+                  style: AppTheme.body1.copyWith(
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
                   ),
@@ -622,25 +621,25 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
               Expanded(
                 child: Text(
                   'Qty: ${item.quantity} ${item.unit}',
-                  style: AirbnbTheme.bodyStyle.copyWith(
-                    color: AirbnbTheme.textSecondary,
+                  style: AppTheme.body1.copyWith(
+                    color: AppTheme.textSecondary,
                   ),
                 ),
               ),
               Expanded(
                 child: Text(
                   'Price: ₹${item.unitPrice.toStringAsFixed(2)}',
-                  style: AirbnbTheme.bodyStyle.copyWith(
-                    color: AirbnbTheme.textSecondary,
+                  style: AppTheme.body1.copyWith(
+                    color: AppTheme.textSecondary,
                   ),
                 ),
               ),
               Expanded(
                 child: Text(
                   'Total: ₹${item.total.toStringAsFixed(2)}',
-                  style: AirbnbTheme.bodyStyle.copyWith(
+                  style: AppTheme.body1.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: AirbnbTheme.primaryColor,
+                    color: AppTheme.primaryColor,
                   ),
                 ),
               ),
@@ -650,8 +649,8 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
             const SizedBox(height: 8),
             Text(
               item.description!,
-              style: AirbnbTheme.bodyStyle.copyWith(
-                color: AirbnbTheme.textSecondary,
+              style: AppTheme.body1.copyWith(
+                color: AppTheme.textSecondary,
                 fontSize: 14,
               ),
             ),
@@ -668,9 +667,9 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AirbnbTheme.primaryColor.withOpacity(0.05),
+        color: AppTheme.primaryColor.withOpacity(0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AirbnbTheme.primaryColor.withOpacity(0.2)),
+        border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2)),
       ),
       child: Column(
         children: [
@@ -692,17 +691,17 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
         children: [
           Text(
             label,
-            style: AirbnbTheme.bodyStyle.copyWith(
+            style: AppTheme.body1.copyWith(
               fontWeight: isTotal ? FontWeight.w600 : FontWeight.w500,
               fontSize: isTotal ? 16 : 14,
             ),
           ),
           Text(
             '₹${amount.toStringAsFixed(2)}',
-            style: AirbnbTheme.bodyStyle.copyWith(
+            style: AppTheme.body1.copyWith(
               fontWeight: isTotal ? FontWeight.w600 : FontWeight.w500,
               fontSize: isTotal ? 16 : 14,
-              color: isTotal ? AirbnbTheme.primaryColor : null,
+              color: isTotal ? AppTheme.primaryColor : null,
             ),
           ),
         ],
@@ -711,7 +710,7 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
   }
 
   Widget _buildAdditionalInfoSection() {
-    return AirbnbCard(
+    return Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -719,13 +718,13 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
             children: [
               Icon(
                 Icons.note_outlined,
-                color: AirbnbTheme.primaryColor,
+                color: AppTheme.primaryColor,
                 size: 24,
               ),
               const SizedBox(width: 12),
               Text(
                 'Additional Information',
-                style: AirbnbTheme.headlineStyle.copyWith(
+                style: AppTheme.headline4.copyWith(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                 ),
@@ -772,7 +771,7 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
             ),
             child: Text(
               _error!,
-              style: AirbnbTheme.bodyStyle.copyWith(
+              style: AppTheme.body1.copyWith(
                 color: Colors.red,
               ),
             ),
@@ -784,15 +783,15 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
                 onPressed: _saveAsDraft,
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  side: BorderSide(color: AirbnbTheme.primaryColor),
+                  side: BorderSide(color: AppTheme.primaryColor),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 child: Text(
                   'Save as Draft',
-                  style: AirbnbTheme.bodyStyle.copyWith(
-                    color: AirbnbTheme.primaryColor,
+                  style: AppTheme.body1.copyWith(
+                    color: AppTheme.primaryColor,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -803,7 +802,7 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _saveInvoice,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AirbnbTheme.primaryColor,
+                  backgroundColor: AppTheme.primaryColor,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -820,7 +819,7 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
                       )
                     : Text(
                         widget.editingInvoice != null ? 'Update Invoice' : 'Create Invoice',
-                        style: AirbnbTheme.bodyStyle.copyWith(
+                        style: AppTheme.body1.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
                         ),
@@ -943,23 +942,28 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
         );
         await invoiceProvider.updateInvoice(invoice);
       } else {
-        invoice = invoiceProvider.createDraftInvoice(
-          category: _selectedCategory!,
-          customer: customer,
+        final invoiceNumber = await _generateInvoiceNumber();
+        invoice = EnhancedInvoice(
+          id: widget.editingInvoice?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+          invoiceNumber: widget.editingInvoice?.invoiceNumber ?? await _generateInvoiceNumber(),
+          businessCategory: _selectedCategory!,
+          createdAt: widget.editingInvoice?.createdAt ?? DateTime.now(),
+          dueDate: _dueDate,
+          status: InvoiceStatus.draft,
+          client: customer,
           items: _items,
           categoryFields: updatedCategoryFields,
-        );
-        invoice = invoice.copyWith(
-          dueDate: _dueDate,
-          totals: invoiceProvider.calculateTotals(_items),
-          paymentDetails: PaymentDetails(
-            method: _paymentMethod,
-            status: isDraft ? PaymentStatus.pending : PaymentStatus.pending,
+          totals: InvoiceTotals(
+            subtotal: invoiceProvider.calculateTotals(_items).subtotal,
+            discountTotal: invoiceProvider.calculateTotals(_items).discountTotal,
+            taxableAmount: invoiceProvider.calculateTotals(_items).subtotal - invoiceProvider.calculateTotals(_items).discountTotal,
+            taxTotal: invoiceProvider.calculateTotals(_items).taxTotal,
+            grandTotal: invoiceProvider.calculateTotals(_items).grandTotal,
           ),
-          status: isDraft ? InvoiceStatus.draft : InvoiceStatus.sent,
           notes: _notesController.text.isEmpty ? null : _notesController.text,
           terms: _termsController.text.isEmpty ? null : _termsController.text,
         );
+        
         await invoiceProvider.addInvoice(invoice);
       }
 
@@ -976,6 +980,19 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
         _isLoading = false;
       });
     }
+  }
+
+  Future<String> _generateInvoiceNumber() async {
+    final lastInvoice = await context.read<EnhancedInvoiceProvider>().getLastInvoice();
+    if (lastInvoice == null) {
+      return 'INV-001';
+    }
+    final lastNumber = int.tryParse(lastInvoice.invoiceNumber.substring(4));
+    if (lastNumber == null) {
+      return 'INV-001';
+    }
+    final newNumber = (lastNumber + 1).toString().padLeft(3, '0');
+    return 'INV-$newNumber';
   }
 
   Future<void> _deleteInvoice() async {

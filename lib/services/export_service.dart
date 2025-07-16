@@ -192,7 +192,7 @@ class ExportService {
   // Share exported file
   Future<void> shareExportFile(String filePath) async {
     try {
-      await Share.shareXFiles([XFile(filePath)]);
+      await Share.shareXFiles([XFile(filePath)], text: 'Exported invoices data');
     } catch (e) {
       throw Exception('Failed to share file: $e');
     }

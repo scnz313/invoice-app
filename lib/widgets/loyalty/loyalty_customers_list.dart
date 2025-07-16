@@ -40,7 +40,7 @@ class LoyaltyCustomersList extends StatelessWidget {
               children: [
                 Text('Points: ${customer.currentPoints}'),
                 Text('Tier: ${customer.tier.displayName}'),
-                Text('Last Purchase: ${customer.lastPurchaseDate.toLocal().toString().split(' ')[0]}'),
+                Text('Last Purchase: ${customer.lastPurchaseDate?.toLocal().toString().split(' ')[0] ?? 'N/A'}'),
               ],
             ),
             trailing: Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurfaceVariant),

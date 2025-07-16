@@ -3,6 +3,8 @@ import 'package:path/path.dart';
 import '../models/enhanced_invoice.dart';
 import '../models/business_category.dart';
 import '../utils/logger.dart';
+import 'dart:convert';
+import '../models/client.dart';
 
 class DatabaseService {
   static Database? _database;
@@ -16,6 +18,7 @@ class DatabaseService {
   static const String tableInvoiceItems = 'invoice_items';
   static const String tableCategoryFields = 'category_fields';
   static const String tableBusinessSettings = 'business_settings';
+  static const String tableClients = 'clients';
 
   // Singleton pattern
   static final DatabaseService _instance = DatabaseService._internal();
@@ -49,7 +52,7 @@ class DatabaseService {
         createdAt TEXT NOT NULL,
         dueDate TEXT NOT NULL,
         status TEXT NOT NULL,
-        customerId TEXT NOT NULL,
+        clientId TEXT NOT NULL,
         subtotal REAL NOT NULL,
         discountTotal REAL NOT NULL,
         taxableAmount REAL NOT NULL,
@@ -63,7 +66,7 @@ class DatabaseService {
         notes TEXT,
         terms TEXT,
         metadata TEXT,
-        FOREIGN KEY (customerId) REFERENCES $tableCustomers (id)
+        FOREIGN KEY (clientId) REFERENCES $tableClients (id)
       )
     ''');
 
@@ -160,11 +163,27 @@ class DatabaseService {
       )
     ''');
 
+    // Create clients table
+    await db.execute('''
+      CREATE TABLE $tableClients (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT,
+        phone TEXT,
+        address TEXT,
+        gstNumber TEXT,
+        type TEXT NOT NULL,
+        categorySpecificData TEXT,
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT NOT NULL
+      )
+    ''');
+
     // Create indexes for better performance
-    await db.execute('CREATE INDEX idx_invoices_customer ON $tableInvoices(customerId)');
+    await db.execute('CREATE INDEX idx_invoices_client ON $tableInvoices(clientId)');
     await db.execute('CREATE INDEX idx_invoices_status ON $tableInvoices(status)');
     await db.execute('CREATE INDEX idx_invoices_date ON $tableInvoices(createdAt)');
-    await db.execute('CREATE INDEX idx_customers_name ON $tableCustomers(name)');
+    await db.execute('CREATE INDEX idx_clients_name ON $tableClients(name)');
     await db.execute('CREATE INDEX idx_products_category ON $tableProducts(category)');
     await db.execute('CREATE INDEX idx_invoice_items_invoice ON $tableInvoiceItems(invoiceId)');
   }
@@ -188,7 +207,7 @@ class DatabaseService {
         'createdAt': invoice.createdAt.toIso8601String(),
         'dueDate': invoice.dueDate.toIso8601String(),
         'status': invoice.status.name,
-        'customerId': invoice.customer.id,
+        'clientId': invoice.client.id,
         'subtotal': invoice.totals.subtotal,
         'discountTotal': invoice.totals.discountTotal,
         'taxableAmount': invoice.totals.taxableAmount,
@@ -273,7 +292,7 @@ class DatabaseService {
           'businessCategory': invoice.businessCategory.name,
           'dueDate': invoice.dueDate.toIso8601String(),
           'status': invoice.status.name,
-          'customerId': invoice.customer.id,
+          'clientId': invoice.client.id,
           'subtotal': invoice.totals.subtotal,
           'discountTotal': invoice.totals.discountTotal,
           'taxableAmount': invoice.totals.taxableAmount,
@@ -549,22 +568,24 @@ class DatabaseService {
 
   // Helper methods
   Future<EnhancedInvoice> _mapToInvoice(Map<String, dynamic> map) async {
-    final customer = await getCustomerById(map['customerId']);
-    if (customer == null) {
-      throw Exception('Customer not found: ${map['customerId']}');
+    final client = await getClientById(map['clientId']);
+    if (client == null) {
+      throw Exception('Client not found: ${map['clientId']}');
     }
 
     final items = await _getInvoiceItems(map['id']);
-    final categoryFields = await _getInvoiceCategoryFields(map['id']);
+    final categoryFields = await _getCategoryFields(map['id']);
 
     return EnhancedInvoice(
       id: map['id'],
       invoiceNumber: map['invoiceNumber'],
-      businessCategory: BusinessCategory.values.firstWhere((e) => e.name == map['businessCategory']),
+      businessCategory: BusinessCategory.values.firstWhere(
+        (e) => e.name == map['businessCategory'],
+      ),
       createdAt: DateTime.parse(map['createdAt']),
       dueDate: DateTime.parse(map['dueDate']),
       status: InvoiceStatus.values.firstWhere((e) => e.name == map['status']),
-      customer: customer,
+      client: client,
       items: items,
       categoryFields: categoryFields,
       totals: InvoiceTotals(
@@ -573,18 +594,9 @@ class DatabaseService {
         taxableAmount: map['taxableAmount'],
         taxTotal: map['taxTotal'],
         grandTotal: map['grandTotal'],
-        currency: map['currency'],
-      ),
-      paymentDetails: PaymentDetails(
-        method: PaymentMethod.values.firstWhere((e) => e.name == map['paymentMethod']),
-        status: PaymentStatus.values.firstWhere((e) => e.name == map['paymentStatus']),
-        paidDate: map['paidDate'] != null ? DateTime.parse(map['paidDate']) : null,
-        transactionId: map['transactionId'],
-        notes: map['notes'],
       ),
       notes: map['notes'],
       terms: map['terms'],
-      metadata: map['metadata'] != null ? jsonDecode(map['metadata']) : null,
     );
   }
 
@@ -614,7 +626,7 @@ class DatabaseService {
     )).toList();
   }
 
-  Future<List<CategorySpecificField>> _getInvoiceCategoryFields(String invoiceId) async {
+  Future<List<CategorySpecificField>> _getCategoryFields(String invoiceId) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
       tableCategoryFields,
@@ -633,25 +645,64 @@ class DatabaseService {
     )).toList();
   }
 
+  Future<Client?> getClientById(String id) async {
+    final db = await database;
+    final result = await db.query(
+      tableClients,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    
+    if (result.isEmpty) return null;
+    
+    return Client.fromJson(result.first);
+  }
+
+  Future<void> insertClient(Client client) async {
+    final db = await database;
+    await db.insert(tableClients, client.toJson());
+  }
+
+  Future<void> updateClient(Client client) async {
+    final db = await database;
+    await db.update(
+      tableClients,
+      client.toJson(),
+      where: 'id = ?',
+      whereArgs: [client.id],
+    );
+  }
+
+  Future<void> deleteClient(String id) async {
+    final db = await database;
+    await db.delete(
+      tableClients,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<List<Client>> getAllClients() async {
+    final db = await database;
+    final result = await db.query(tableClients);
+    return result.map((map) => Client.fromJson(map)).toList();
+  }
+
   // Analytics and reporting
   Future<Map<String, dynamic>> getInvoiceStats() async {
     final db = await database;
     
-    final totalInvoices = Sqflite.firstIntValue(
-      await db.rawQuery('SELECT COUNT(*) FROM $tableInvoices')
-    ) ?? 0;
+    final totalInvoicesResult = await db.rawQuery('SELECT COUNT(*) FROM $tableInvoices');
+    final totalInvoices = (totalInvoicesResult.isNotEmpty ? totalInvoicesResult.first['COUNT(*)'] as int? : null) ?? 0;
     
-    final totalRevenue = Sqflite.firstDoubleValue(
-      await db.rawQuery('SELECT SUM(grandTotal) FROM $tableInvoices WHERE status = "paid"')
-    ) ?? 0.0;
+    final revenueResult = await db.rawQuery('SELECT SUM(grandTotal) FROM $tableInvoices WHERE status = "paid"');
+    final totalRevenue = (revenueResult.isNotEmpty ? revenueResult.first['SUM(grandTotal)'] as double? : null) ?? 0.0;
     
-    final pendingInvoices = Sqflite.firstIntValue(
-      await db.rawQuery('SELECT COUNT(*) FROM $tableInvoices WHERE status = "sent"')
-    ) ?? 0;
+    final pendingResult = await db.rawQuery('SELECT COUNT(*) FROM $tableInvoices WHERE status = "sent"');
+    final pendingInvoices = (pendingResult.isNotEmpty ? pendingResult.first['COUNT(*)'] as int? : null) ?? 0;
     
-    final overdueInvoices = Sqflite.firstIntValue(
-      await db.rawQuery('SELECT COUNT(*) FROM $tableInvoices WHERE status = "overdue"')
-    ) ?? 0;
+    final overdueResult = await db.rawQuery('SELECT COUNT(*) FROM $tableInvoices WHERE status = "overdue"');
+    final overdueInvoices = (overdueResult.isNotEmpty ? overdueResult.first['COUNT(*)'] as int? : null) ?? 0;
 
     return {
       'totalInvoices': totalInvoices,

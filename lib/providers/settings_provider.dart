@@ -104,4 +104,27 @@ class SettingsProvider with ChangeNotifier {
     notifyListeners();
     await _saveSettings();
   }
+
+  // Get business category
+  Future<BusinessCategory> getBusinessCategory() async {
+    if (_selectedBusinessCategory != null) {
+      return _selectedBusinessCategory!;
+    }
+    
+    // If not loaded, load from storage
+    await loadSettings();
+    return _selectedBusinessCategory ?? BusinessCategory.groceryStore; // default fallback
+  }
+
+  // Check if onboarding is complete
+  Future<bool> hasCompletedOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('onboarding_complete') ?? false;
+  }
+
+  // Mark onboarding as complete
+  Future<void> completeOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('onboarding_complete', true);
+  }
 } 

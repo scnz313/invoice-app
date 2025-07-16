@@ -720,7 +720,7 @@ class _CategoryProductManagementScreenState extends State<CategoryProductManagem
       case BusinessCategory.restaurantCafe:
         return AppTheme.babu;
       case BusinessCategory.clothingStore:
-        return AppTheme.arches;
+        return AppTheme.rausch;
       case BusinessCategory.electronicsStore:
         return Colors.indigo;
       case BusinessCategory.hardwareStore:

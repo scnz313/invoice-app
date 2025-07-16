@@ -64,7 +64,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w700,
-          color: context.colors.onSurface,
+          color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
     );
@@ -80,7 +80,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ListTile(
                 leading: Icon(
                   Icons.business,
-                  color: context.colors.primary,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
                 title: Text(
                   settings.name,
@@ -90,7 +90,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 trailing: Icon(
                   Icons.arrow_forward_ios,
                   size: 16,
-                                          color: context.colors.onSurfaceVariant,
+                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 onTap: () => _showCompanySettingsDialog(),
               ),
@@ -120,14 +120,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Icon(
           icon,
           size: 16,
-          color: context.colors.onSurfaceVariant,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
             text,
             style: TextStyle(
-              color: context.colors.onSurfaceVariant,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontSize: 14,
             ),
           ),
@@ -145,7 +145,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ListTile(
                 leading: Icon(
                   themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
-                  color: context.colors.primary,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
                 title: const Text('Theme Mode'),
                 subtitle: Text(_getThemeModeText(themeProvider.themeMode)),
@@ -207,18 +207,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return ListTile(
       leading: Icon(
         icon,
-        color: disabled ? context.colors.onSurfaceVariant : context.colors.primary,
+        color: disabled ? Theme.of(context).colorScheme.onSurfaceVariant : Theme.of(context).colorScheme.primary,
       ),
       title: Text(
         title,
         style: TextStyle(
-          color: disabled ? context.colors.onSurfaceVariant : null,
+          color: disabled ? Theme.of(context).colorScheme.onSurfaceVariant : null,
         ),
       ),
       subtitle: Text(
         subtitle,
         style: TextStyle(
-          color: disabled ? context.colors.onSurfaceVariant : null,
+          color: disabled ? Theme.of(context).colorScheme.onSurfaceVariant : null,
         ),
       ),
       trailing: Switch(
@@ -235,7 +235,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             leading: Icon(
               Icons.info_outline,
-              color: context.colors.primary,
+              color: Theme.of(context).colorScheme.primary,
             ),
             title: const Text('Version'),
             subtitle: const Text('1.0.0'),
@@ -244,7 +244,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             leading: Icon(
               Icons.person,
-              color: context.colors.primary,
+              color: Theme.of(context).colorScheme.primary,
             ),
             title: const Text('Developer'),
             subtitle: const Text('HASHIM (fin.)'),
@@ -253,7 +253,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             leading: Icon(
               Icons.restore,
-              color: context.colors.error,
+              color: Theme.of(context).colorScheme.error,
             ),
             title: const Text('Reset Settings'),
             subtitle: const Text('Restore default settings'),
@@ -263,7 +263,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             leading: Icon(
               Icons.delete_forever,
-              color: context.colors.error,
+              color: Theme.of(context).colorScheme.error,
             ),
             title: const Text('Clear All Data'),
             subtitle: const Text('Emergency: Clear all app data and restart'),
@@ -316,7 +316,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   }
                 }
               },
-              style: TextButton.styleFrom(foregroundColor: context.colors.error),
+              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
               child: const Text('Reset'),
             ),
           ],
@@ -376,7 +376,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: const Text('All data cleared. App will restart...'),
-                          backgroundColor: context.colors.tertiary,
+                          backgroundColor: Theme.of(context).colorScheme.tertiary,
                         ),
                       );
                       
@@ -416,14 +416,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text('Error clearing data: $e'),
-                          backgroundColor: context.colors.error,
+                          backgroundColor: Theme.of(context).colorScheme.error,
                         ),
                       );
                     }
                   }
                 }
               },
-              style: TextButton.styleFrom(foregroundColor: context.colors.error),
+              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
               child: const Text('CLEAR ALL DATA'),
             ),
           ],
@@ -621,7 +621,7 @@ class _CompanySettingsDialogState extends State<_CompanySettingsDialog> {
         children: [
           Row(
             children: [
-              Icon(Icons.image, color: Theme.of(context).primaryColor),
+              Icon(Icons.image, color: Theme.of(context).colorScheme.primary),
               const SizedBox(width: 8),
               const Text(
                 'Company Logo',

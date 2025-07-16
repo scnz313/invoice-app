@@ -1127,9 +1127,9 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen>
       );
 
       if (widget.invoice != null) {
-        await invoiceProvider.updateInvoice(invoice);
+        final result = await invoiceProvider.updateInvoice(invoice);
       } else {
-        await invoiceProvider.addInvoice(invoice);
+        final result = await invoiceProvider.addInvoice(invoice);
       }
 
       if (!mounted) return;

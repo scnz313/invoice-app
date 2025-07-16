@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/enhanced_invoice.dart';
-import '../utils/theme.dart';
+import '../theme/app_theme.dart';
 
 class CategoryFieldWidget extends StatefulWidget {
   final CategorySpecificField field;
@@ -83,7 +83,7 @@ class _CategoryFieldWidgetState extends State<CategoryFieldWidget> {
           children: [
             Text(
               widget.field.label,
-              style: AirbnbTheme.bodyStyle.copyWith(
+              style: AppTheme.body1.copyWith(
                 fontWeight: FontWeight.w500,
                 fontSize: 14,
               ),
@@ -91,7 +91,7 @@ class _CategoryFieldWidgetState extends State<CategoryFieldWidget> {
             if (widget.field.required)
               Text(
                 ' *',
-                style: AirbnbTheme.bodyStyle.copyWith(
+                style: AppTheme.body1.copyWith(
                   color: Colors.red,
                   fontWeight: FontWeight.w500,
                 ),
@@ -188,7 +188,7 @@ class _CategoryFieldWidgetState extends State<CategoryFieldWidget> {
               children: [
                 Text(
                   '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                  style: AirbnbTheme.bodyStyle,
+                  style: AppTheme.body1,
                 ),
                 const Icon(Icons.calendar_today, size: 20),
               ],
@@ -209,7 +209,7 @@ class _CategoryFieldWidgetState extends State<CategoryFieldWidget> {
               children: [
                 Text(
                   _selectedTime.format(context),
-                  style: AirbnbTheme.bodyStyle,
+                  style: AppTheme.body1,
                 ),
                 const Icon(Icons.access_time, size: 20),
               ],
@@ -226,7 +226,7 @@ class _CategoryFieldWidgetState extends State<CategoryFieldWidget> {
           child: CheckboxListTile(
             title: Text(
               widget.field.label,
-              style: AirbnbTheme.bodyStyle.copyWith(fontSize: 14),
+              style: AppTheme.body1.copyWith(fontSize: 14),
             ),
             value: _boolValue,
             onChanged: (value) {

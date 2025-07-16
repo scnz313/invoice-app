@@ -37,7 +37,7 @@ class QuickActionsCard extends StatelessWidget {
         const SizedBox(height: AppTheme.spacing8),
         Text(
           label,
-          style: Theme.of(context).textTheme.caption?.copyWith(
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: AppTheme.foggy,
                 fontWeight: FontWeight.w600,
               ) ?? TextStyle(color: AppTheme.foggy, fontSize: 12, fontWeight: FontWeight.w600),

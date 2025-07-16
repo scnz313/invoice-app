@@ -10,6 +10,8 @@ import 'enhanced_customer_screen.dart';
 import 'category_product_management_screen.dart';
 import 'enhanced_settings_screen.dart';
 import 'category_specific_screens.dart';
+import 'grocery_reports_screen.dart';
+import 'invoice_creation_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -237,7 +239,7 @@ class CategorySpecificInvoiceCreationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     switch (category) {
       case BusinessCategory.groceryStore:
-        return const GroceryInvoiceCreationScreen();
+        return const InvoiceCreationScreen();
       case BusinessCategory.jewelryStore:
         return JewelryInvoiceCreationScreen(category: category);
       case BusinessCategory.restaurantCafe:

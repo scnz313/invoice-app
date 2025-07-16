@@ -493,6 +493,29 @@ extension BusinessCategoryExtension on BusinessCategory {
     }
   }
 
+  double get defaultTaxRate {
+    switch (this) {
+      case BusinessCategory.groceryStore:
+        return 5.0; // Lower tax rate for groceries
+      case BusinessCategory.restaurantCafe:
+        return 5.0; // Service tax for restaurants
+      case BusinessCategory.jewelryStore:
+        return 3.0; // Lower tax for jewelry
+      case BusinessCategory.clothingStore:
+        return 12.0; // Standard tax for clothing
+      case BusinessCategory.electronicsStore:
+        return 18.0; // Higher tax for electronics
+      case BusinessCategory.hardwareStore:
+        return 18.0; // Standard tax for hardware
+      case BusinessCategory.bakery:
+        return 5.0; // Lower tax for food items
+      case BusinessCategory.stationeryStore:
+        return 12.0; // Standard tax for stationery
+      case BusinessCategory.other:
+        return 18.0; // Default tax rate
+    }
+  }
+
   Map<String, dynamic> get defaultSettings {
     switch (this) {
       case BusinessCategory.jewelryStore:

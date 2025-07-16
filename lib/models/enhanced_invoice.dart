@@ -221,7 +221,6 @@ enum InvoiceStatus {
   paid,
   overdue,
   cancelled,
-  partiallyPaid,
 }
 
 enum CustomerType {

@@ -1,7 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
 
-part 'customer_loyalty.g.dart';
-
 enum LoyaltyTier {
   bronze,
   silver,
@@ -18,7 +16,6 @@ enum LoyaltyTransactionType {
   adjustment,
 }
 
-@JsonSerializable()
 class CustomerLoyalty {
   final String id;
   final String customerId;
@@ -46,8 +43,41 @@ class CustomerLoyalty {
     required this.updatedAt,
   });
 
-  factory CustomerLoyalty.fromJson(Map<String, dynamic> json) => _$CustomerLoyaltyFromJson(json);
-  Map<String, dynamic> toJson() => _$CustomerLoyaltyToJson(this);
+  factory CustomerLoyalty.fromJson(Map<String, dynamic> json) {
+    return CustomerLoyalty(
+      id: json['id'] as String,
+      customerId: json['customerId'] as String,
+      currentPoints: json['currentPoints'] as int,
+      totalPointsEarned: json['totalPointsEarned'] as int,
+      totalPointsRedeemed: json['totalPointsRedeemed'] as int,
+      tier: LoyaltyTier.values.firstWhere((e) => e.name == json['tier']),
+      lastPurchaseDate: json['lastPurchaseDate'] != null 
+          ? DateTime.parse(json['lastPurchaseDate'] as String)
+          : null,
+      tierUpgradeDate: json['tierUpgradeDate'] != null 
+          ? DateTime.parse(json['tierUpgradeDate'] as String)
+          : null,
+      metadata: json['metadata'] as Map<String, dynamic>?,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'customerId': customerId,
+      'currentPoints': currentPoints,
+      'totalPointsEarned': totalPointsEarned,
+      'totalPointsRedeemed': totalPointsRedeemed,
+      'tier': tier.name,
+      'lastPurchaseDate': lastPurchaseDate?.toIso8601String(),
+      'tierUpgradeDate': tierUpgradeDate?.toIso8601String(),
+      'metadata': metadata,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+    };
+  }
 
   CustomerLoyalty copyWith({
     String? id,
@@ -86,7 +116,6 @@ class CustomerLoyalty {
   int get maxRedemptionAmount => (currentPoints / 100).floor() * 100; // Redeem in 100 point increments
 }
 
-@JsonSerializable()
 class LoyaltyTransaction {
   final String id;
   final String customerId;
@@ -110,11 +139,35 @@ class LoyaltyTransaction {
     required this.createdAt,
   });
 
-  factory LoyaltyTransaction.fromJson(Map<String, dynamic> json) => _$LoyaltyTransactionFromJson(json);
-  Map<String, dynamic> toJson() => _$LoyaltyTransactionToJson(this);
+  factory LoyaltyTransaction.fromJson(Map<String, dynamic> json) {
+    return LoyaltyTransaction(
+      id: json['id'] as String,
+      customerId: json['customerId'] as String,
+      type: LoyaltyTransactionType.values.firstWhere((e) => e.name == json['type']),
+      points: json['points'] as int,
+      description: json['description'] as String?,
+      invoiceId: json['invoiceId'] as String?,
+      purchaseAmount: json['purchaseAmount'] as double?,
+      metadata: json['metadata'] as Map<String, dynamic>?,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'customerId': customerId,
+      'type': type.name,
+      'points': points,
+      'description': description,
+      'invoiceId': invoiceId,
+      'purchaseAmount': purchaseAmount,
+      'metadata': metadata,
+      'createdAt': createdAt.toIso8601String(),
+    };
+  }
 }
 
-@JsonSerializable()
 class LoyaltyRule {
   final String id;
   final String name;
@@ -144,8 +197,43 @@ class LoyaltyRule {
     required this.updatedAt,
   });
 
-  factory LoyaltyRule.fromJson(Map<String, dynamic> json) => _$LoyaltyRuleFromJson(json);
-  Map<String, dynamic> toJson() => _$LoyaltyRuleToJson(this);
+  factory LoyaltyRule.fromJson(Map<String, dynamic> json) {
+    return LoyaltyRule(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      description: json['description'] as String,
+      pointsPerRupee: (json['pointsPerRupee'] as num).toDouble(),
+      minimumPurchase: (json['minimumPurchase'] as num).toDouble(),
+      maximumPoints: (json['maximumPoints'] as num).toDouble(),
+      isActive: json['isActive'] as bool,
+      validFrom: json['validFrom'] != null 
+          ? DateTime.parse(json['validFrom'] as String)
+          : null,
+      validUntil: json['validUntil'] != null 
+          ? DateTime.parse(json['validUntil'] as String)
+          : null,
+      metadata: json['metadata'] as Map<String, dynamic>?,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'pointsPerRupee': pointsPerRupee,
+      'minimumPurchase': minimumPurchase,
+      'maximumPoints': maximumPoints,
+      'isActive': isActive,
+      'validFrom': validFrom?.toIso8601String(),
+      'validUntil': validUntil?.toIso8601String(),
+      'metadata': metadata,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+    };
+  }
 
   bool get isValid {
     final now = DateTime.now();
@@ -162,7 +250,6 @@ class LoyaltyRule {
   }
 }
 
-@JsonSerializable()
 class LoyaltyReward {
   final String id;
   final String name;
@@ -196,8 +283,47 @@ class LoyaltyReward {
     required this.updatedAt,
   });
 
-  factory LoyaltyReward.fromJson(Map<String, dynamic> json) => _$LoyaltyRewardFromJson(json);
-  Map<String, dynamic> toJson() => _$LoyaltyRewardToJson(this);
+  factory LoyaltyReward.fromJson(Map<String, dynamic> json) {
+    return LoyaltyReward(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      description: json['description'] as String,
+      pointsRequired: json['pointsRequired'] as int,
+      discountAmount: (json['discountAmount'] as num).toDouble(),
+      discountPercentage: (json['discountPercentage'] as num).toDouble(),
+      isPercentage: json['isPercentage'] as bool,
+      minimumPurchase: (json['minimumPurchase'] as num).toDouble(),
+      isActive: json['isActive'] as bool,
+      validFrom: json['validFrom'] != null 
+          ? DateTime.parse(json['validFrom'] as String)
+          : null,
+      validUntil: json['validUntil'] != null 
+          ? DateTime.parse(json['validUntil'] as String)
+          : null,
+      metadata: json['metadata'] as Map<String, dynamic>?,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'pointsRequired': pointsRequired,
+      'discountAmount': discountAmount,
+      'discountPercentage': discountPercentage,
+      'isPercentage': isPercentage,
+      'minimumPurchase': minimumPurchase,
+      'isActive': isActive,
+      'validFrom': validFrom?.toIso8601String(),
+      'validUntil': validUntil?.toIso8601String(),
+      'metadata': metadata,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+    };
+  }
 
   bool get isValid {
     final now = DateTime.now();

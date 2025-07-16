@@ -19,7 +19,7 @@ class RecentActivityCard extends StatelessWidget {
           children: [
             Text(
               'Recent Activity',
-              style: Theme.of(context).textTheme.subtitle1?.copyWith(
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ) ?? const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
@@ -53,11 +53,11 @@ class RecentActivityCard extends StatelessWidget {
               children: [
                 Text(
                   activity['title'] as String,
-                  style: Theme.of(context).textTheme.bodyText1,
+                  style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 Text(
                   activity['subtitle'] as String,
-                  style: Theme.of(context).textTheme.caption?.copyWith(color: AppTheme.foggy),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.foggy),
                 ),
               ],
             ),

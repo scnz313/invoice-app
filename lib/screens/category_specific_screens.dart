@@ -363,7 +363,7 @@ class _ClothingInvoiceCreationScreenState extends State<ClothingInvoiceCreationS
     return Scaffold(
       appBar: AppBar(
         title: Text('Create Clothing Invoice'),
-        backgroundColor: AppTheme.arches,
+        backgroundColor: AppTheme.rausch,
         foregroundColor: AppTheme.snow,
       ),
       body: SingleChildScrollView(
@@ -477,7 +477,7 @@ class ClothingReportsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Clothing Reports'),
-        backgroundColor: AppTheme.arches,
+        backgroundColor: AppTheme.rausch,
         foregroundColor: AppTheme.snow,
       ),
       body: SingleChildScrollView(
@@ -499,7 +499,7 @@ class ClothingReportsScreen extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       child: ListTile(
-        leading: Icon(icon, color: AppTheme.arches, size: 32),
+        leading: Icon(icon, color: AppTheme.rausch, size: 32),
         title: Text(title, style: AppTheme.headline4),
         subtitle: Text(description, style: AppTheme.body2),
         trailing: Icon(Icons.arrow_forward_ios, color: AppTheme.foggy),

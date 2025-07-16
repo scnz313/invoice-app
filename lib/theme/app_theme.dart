@@ -27,8 +27,13 @@ class AppTheme {
   static const double radius24 = 24.0;
 
   // Animation durations
-  static const Duration normalAnimation = Duration(milliseconds: 400);
-  static const Duration slowAnimation = Duration(milliseconds: 800);
+  static const Duration fastAnimation = Duration(milliseconds: 200);
+  static const Duration normalAnimation = Duration(milliseconds: 300);
+  static const Duration slowAnimation = Duration(milliseconds: 500);
+
+  // Default values
+  static const double defaultTaxRate = 18.0;
+  static const List<String> paymentMethods = ['Cash', 'Card', 'UPI', 'Bank Transfer', 'Cheque'];
 
   // Gradient decoration for logo/icon
   static const BoxDecoration gradientDecoration = BoxDecoration(
@@ -47,16 +52,18 @@ class AppTheme {
     color: hof,
   );
   static const TextStyle headline4 = TextStyle(
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: FontWeight.w600,
     color: hof,
   );
   static const TextStyle body1 = TextStyle(
     fontSize: 16,
+    fontWeight: FontWeight.w400,
     color: hof,
   );
   static const TextStyle body2 = TextStyle(
     fontSize: 14,
+    fontWeight: FontWeight.w400,
     color: hof,
   );
   static const TextStyle caption = TextStyle(
@@ -69,7 +76,43 @@ class AppTheme {
     color: snow,
   );
 
-  // Airbnb-style background color
-  static const Color backgroundColor = ghost;
+  // Color aliases for compatibility
   static const Color primaryColor = rausch;
+  static const Color backgroundColor = ghost;
+  static const Color textSecondary = foggy;
+
+  // Theme data
+  static ThemeData get lightTheme {
+    return ThemeData(
+      primarySwatch: Colors.red,
+      primaryColor: primaryColor,
+      scaffoldBackgroundColor: backgroundColor,
+      cardColor: snow,
+      textTheme: const TextTheme(
+        headlineLarge: headline1,
+        headlineMedium: headline2,
+        headlineSmall: headline3,
+        titleLarge: headline4,
+        bodyLarge: body1,
+        bodyMedium: body2,
+        bodySmall: caption,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryColor,
+          foregroundColor: snow,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radius12),
+          ),
+        ),
+      ),
+      cardTheme: CardTheme(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius12),
+        ),
+        elevation: 2,
+      ),
+      useMaterial3: true,
+    );
+  }
 } 

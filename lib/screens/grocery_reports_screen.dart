@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../utils/constants.dart';
 import '../utils/logger.dart';
+import '../theme/app_theme.dart';
 
 class GroceryReportsScreen extends StatefulWidget {
   const GroceryReportsScreen({super.key});
@@ -39,7 +39,7 @@ class _GroceryReportsScreenState extends State<GroceryReportsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: const Text(
           'Grocery Reports',
@@ -48,7 +48,7 @@ class _GroceryReportsScreenState extends State<GroceryReportsScreen>
             fontWeight: FontWeight.w600,
           ),
         ),
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppTheme.primaryColor,
         elevation: 0,
         actions: [
           IconButton(
@@ -391,7 +391,7 @@ class _GroceryReportsScreenState extends State<GroceryReportsScreen>
                       value: (category['percentage'] as double) / 100,
                       backgroundColor: Colors.grey[200],
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        AppColors.primary,
+                        AppTheme.primaryColor,
                       ),
                     ),
                   ],
@@ -732,11 +732,11 @@ class _GroceryReportsScreenState extends State<GroceryReportsScreen>
                 child: Row(
                   children: [
                     CircleAvatar(
-                      backgroundColor: AppColors.primary.withOpacity(0.2),
+                      backgroundColor: AppTheme.primaryColor.withOpacity(0.2),
                       child: Text(
                         (customer['name'] as String).substring(0, 1),
                         style: TextStyle(
-                          color: AppColors.primary,
+                          color: AppTheme.primaryColor,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

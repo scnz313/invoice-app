@@ -42,7 +42,7 @@ class LoyaltyTransactionsList extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Points: ${tx.points}'),
-                Text('Invoice: ${tx.invoiceId}'),
+                Text('Invoice: ${tx.invoiceId ?? 'N/A'}'),
                 Text('Date: ${tx.createdAt.toLocal().toString().split(' ')[0]}'),
               ],
             ),

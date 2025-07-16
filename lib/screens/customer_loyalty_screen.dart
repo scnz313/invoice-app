@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/customer_loyalty.dart';
-import '../utils/constants.dart';
+import '../theme/app_theme.dart';
 import '../utils/logger.dart';
 import '../widgets/loyalty/loyalty_summary_card.dart';
 import '../widgets/loyalty/loyalty_customers_list.dart';
@@ -205,7 +205,7 @@ class _CustomerLoyaltyScreenState extends State<CustomerLoyaltyScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: const Text(
           'Customer Loyalty',
@@ -214,7 +214,7 @@ class _CustomerLoyaltyScreenState extends State<CustomerLoyaltyScreen>
             fontWeight: FontWeight.w600,
           ),
         ),
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppTheme.primaryColor,
         elevation: 0,
         actions: [
           IconButton(
@@ -307,7 +307,7 @@ class _CustomerLoyaltyScreenState extends State<CustomerLoyaltyScreen>
                   'Total Customers',
                   totalCustomers.toString(),
                   Icons.people,
-                  AppColors.primary,
+                  AppTheme.primaryColor,
                 ),
               ),
               const SizedBox(width: 12),
@@ -801,7 +801,7 @@ class _CustomerLoyaltyScreenState extends State<CustomerLoyaltyScreen>
                 icon: const Icon(Icons.add),
                 label: const Text('Add Rule'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: AppTheme.primaryColor,
                   foregroundColor: Colors.white,
                 ),
               ),
@@ -1024,7 +1024,7 @@ class _CustomerLoyaltyScreenState extends State<CustomerLoyaltyScreen>
                 icon: const Icon(Icons.add),
                 label: const Text('Add Reward'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: AppTheme.primaryColor,
                   foregroundColor: Colors.white,
                 ),
               ),

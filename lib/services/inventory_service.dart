@@ -249,12 +249,15 @@ class InventoryService {
           newStock += quantity;
           break;
         case InventoryTransactionType.adjustment:
-          newStock = quantity;
-          break;
-        case InventoryTransactionType.return:
-          newStock += quantity;
+          newStock = quantity; // Direct adjustment
           break;
         case InventoryTransactionType.damage:
+          newStock -= quantity;
+          break;
+        case InventoryTransactionType.stockIn:
+          newStock += quantity;
+          break;
+        case InventoryTransactionType.stockOut:
           newStock -= quantity;
           break;
       }
@@ -454,8 +457,9 @@ enum InventoryTransactionType {
   sale,
   purchase,
   adjustment,
-  return,
   damage,
+  stockIn,
+  stockOut,
 }
 
 // Inventory transaction model
@@ -525,10 +529,12 @@ extension InventoryTransactionTypeExtension on InventoryTransactionType {
         return 'Purchase';
       case InventoryTransactionType.adjustment:
         return 'Adjustment';
-      case InventoryTransactionType.return:
-        return 'Return';
       case InventoryTransactionType.damage:
         return 'Damage';
+      case InventoryTransactionType.stockIn:
+        return 'Stock In';
+      case InventoryTransactionType.stockOut:
+        return 'Stock Out';
     }
   }
 
@@ -539,10 +545,12 @@ extension InventoryTransactionTypeExtension on InventoryTransactionType {
       case InventoryTransactionType.purchase:
         return Colors.green;
       case InventoryTransactionType.adjustment:
-        return Colors.blue;
-      case InventoryTransactionType.return:
         return Colors.orange;
       case InventoryTransactionType.damage:
+        return Colors.red;
+      case InventoryTransactionType.stockIn:
+        return Colors.blue;
+      case InventoryTransactionType.stockOut:
         return Colors.red;
     }
   }
@@ -554,11 +562,13 @@ extension InventoryTransactionTypeExtension on InventoryTransactionType {
       case InventoryTransactionType.purchase:
         return Icons.add_shopping_cart;
       case InventoryTransactionType.adjustment:
-        return Icons.edit;
-      case InventoryTransactionType.return:
-        return Icons.undo;
+        return Icons.tune;
       case InventoryTransactionType.damage:
         return Icons.block;
+      case InventoryTransactionType.stockIn:
+        return Icons.add_shopping_cart;
+      case InventoryTransactionType.stockOut:
+        return Icons.remove_shopping_cart;
     }
   }
 }

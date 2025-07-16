@@ -12,6 +12,7 @@ import '../models/company_settings.dart';
 import '../utils/currency_helper.dart';
 import '../utils/logger.dart';
 import 'image_service.dart';
+import 'package:cross_file/cross_file.dart';
 
 class PDFService {
   static final PDFService _instance = PDFService._internal();
@@ -1092,13 +1093,8 @@ class PDFService {
       // Use share_plus package instead of Printing.sharePdf for better cross-platform support
       final xFile = XFile(fileName);
       
-      Logger.debug('Sharing PDF using share_plus...', 'PDFService');
-      
-      await Share.shareXFiles(
-        [xFile],
-        subject: 'Invoice ${invoice.invoiceNumber}',
-        text: 'Please find attached invoice ${invoice.invoiceNumber} from ${settings.name.isNotEmpty ? settings.name : 'Your Company'}.',
-      );
+      // Share the file
+      await Share.shareXFiles([xFile], text: 'Invoice PDF');
       
       Logger.info('PDF sharing completed successfully', 'PDFService');
     } catch (e, stackTrace) {

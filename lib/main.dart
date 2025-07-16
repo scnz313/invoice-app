@@ -6,21 +6,14 @@ import 'screens/welcome_screen.dart';
 import 'screens/category_selection_screen.dart';
 import 'screens/business_setup_screen.dart';
 import 'screens/main_navigation_screen.dart';
-import 'screens/dashboard_screen.dart';
-import 'screens/invoice_creation_screen.dart';
-import 'screens/grocery_invoice_creation_screen.dart';
-import 'screens/inventory_management_screen.dart';
-import 'screens/grocery_product_management_screen.dart';
-import 'screens/customer_loyalty_screen.dart';
-import 'screens/grocery_reports_screen.dart';
 import 'theme/app_theme.dart';
 import 'utils/logger.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize logging
-  Logger.initialize();
+  // Initialize logger (if needed)
+  // Logger.initialize();
   
   runApp(const InvoiceApp());
 }
@@ -38,43 +31,29 @@ class InvoiceApp extends StatelessWidget {
       child: Consumer<SettingsProvider>(
         builder: (context, settingsProvider, child) {
           return MaterialApp(
-            title: 'Invoice - Professional Invoice Management',
-            debugShowCheckedModeBanner: false,
-            theme: ThemeData(
-              primarySwatch: Colors.blue,
-              fontFamily: 'Roboto',
-              useMaterial3: true,
-            ),
+            title: 'Invoice App',
+            theme: AppTheme.lightTheme,
             home: FutureBuilder<bool>(
-              future: settingsProvider.isOnboardingComplete(),
+              future: settingsProvider.hasCompletedOnboarding(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Scaffold(
-                    backgroundColor: AirbnbTheme.backgroundColor,
+                    backgroundColor: AppTheme.backgroundColor,
                     body: Center(
                       child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(AirbnbTheme.primaryColor),
+                        valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
                       ),
                     ),
                   );
                 }
-
-                final isOnboardingComplete = snapshot.data ?? false;
                 
-                if (!isOnboardingComplete) {
-                  return const WelcomeScreen();
-                }
-
-                return const MainNavigationScreen();
+                final hasCompletedOnboarding = snapshot.data ?? false;
+                return hasCompletedOnboarding
+                    ? const MainNavigationScreen()
+                    : const WelcomeScreen();
               },
             ),
-            routes: {
-              '/welcome': (context) => const WelcomeScreen(),
-              '/category-selection': (context) => const CategorySelectionScreen(),
-              '/business-setup': (context) => const BusinessSetupScreen(),
-              '/dashboard': (context) => const MainNavigationScreen(),
-              '/invoice-creation': (context) => const InvoiceCreationScreen(),
-            },
+            debugShowCheckedModeBanner: false,
           );
         },
       ),

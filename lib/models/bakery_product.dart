@@ -990,7 +990,7 @@ extension BakeryCategoryExtension on BakeryCategory {
       case BakeryCategory.seasonalItems:
         return Icons.wb_sunny;
       case BakeryCategory.dietaryOptions:
-        return Icons.allergy;
+        return Icons.warning;
     }
   }
 }
