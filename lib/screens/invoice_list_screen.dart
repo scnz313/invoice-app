@@ -7,6 +7,7 @@ import '../services/pdf_service.dart';
 import '../services/export_service.dart';
 import '../utils/currency_helper.dart';
 import 'invoice_form_screen.dart';
+import '../widgets/invoice/invoice_card.dart';
 
 class InvoiceListScreen extends StatefulWidget {
   const InvoiceListScreen({super.key});
@@ -210,87 +211,35 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                     itemCount: invoices.length,
                     itemBuilder: (context, index) {
                       final invoice = invoices[index];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        child: ListTile(
-                          leading: _isSelectionMode 
-                              ? Checkbox(
-                                  value: _selectedInvoiceIds.contains(invoice.id),
-                                  onChanged: (bool? value) {
-                                    setState(() {
-                                      if (value == true) {
-                                        _selectedInvoiceIds.add(invoice.id);
-                                      } else {
-                                        _selectedInvoiceIds.remove(invoice.id);
-                                      }
-                                    });
-                                  },
-                                )
-                              : CircleAvatar(
-                                  backgroundColor: _getStatusColor(invoice.status).withAlpha((255 * 0.1).round()),
-                            child: Icon(
-                              _getStatusIcon(invoice.status),
-                              color: _getStatusColor(invoice.status),
-                            ),
-                          ),
-                          title: Text(
-                            invoice.invoiceNumber,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(invoice.client.name),
-                              Text(
-                                'Due: ${_formatDate(invoice.dueDate)}',
-                                style: TextStyle(
-                                  color: invoice.isOverdue ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.onSurfaceVariant,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                          trailing: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                CurrencyHelper.formatInvoiceAmount(invoice.total),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: _getStatusColor(invoice.status).withAlpha((255 * 0.1).round()),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  _getStatusText(invoice.status),
-                                  style: TextStyle(
-                                    color: _getStatusColor(invoice.status),
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          onTap: _isSelectionMode 
-                              ? () {
-                                  setState(() {
-                                    if (_selectedInvoiceIds.contains(invoice.id)) {
-                                      _selectedInvoiceIds.remove(invoice.id);
-                                    } else {
-                                      _selectedInvoiceIds.add(invoice.id);
-                                    }
-                                  });
-                                }
-                              : () => _showInvoiceDetails(context, invoice),
-                        ),
-                      );
+                      return InvoiceCard(
+                        invoice: invoice,
+                        isSelected: _selectedInvoiceIds.contains(invoice.id),
+                        isSelectionMode: _isSelectionMode,
+                        onSelect: (value) {
+                          setState(() {
+                            if (value == true) {
+                              _selectedInvoiceIds.add(invoice.id);
+                            } else {
+                              _selectedInvoiceIds.remove(invoice.id);
+                            }
+                          });
+                        },
+                        onTap: _isSelectionMode
+                            ? () {
+                                setState(() {
+                                  if (_selectedInvoiceIds.contains(invoice.id)) {
+                                    _selectedInvoiceIds.remove(invoice.id);
+                                  } else {
+                                    _selectedInvoiceIds.add(invoice.id);
+                                  }
+                                });
+                              }
+                            : () => _showInvoiceDetails(context, invoice),
+                        statusColor: _getStatusColor(invoice.status),
+                        statusIcon: _getStatusIcon(invoice.status),
+                        statusText: _getStatusText(invoice.status),
+                        dueDateText: _formatDate(invoice.dueDate),
+                      ),
                     },
                   ),
                 );
