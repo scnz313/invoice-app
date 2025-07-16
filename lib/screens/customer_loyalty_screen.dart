@@ -3,6 +3,7 @@ import '../models/customer_loyalty.dart';
 import '../utils/constants.dart';
 import '../utils/logger.dart';
 import '../widgets/loyalty/loyalty_summary_card.dart';
+import '../widgets/loyalty/loyalty_customers_list.dart';
 
 class CustomerLoyaltyScreen extends StatefulWidget {
   const CustomerLoyaltyScreen({super.key});
@@ -266,9 +267,7 @@ class _CustomerLoyaltyScreenState extends State<CustomerLoyaltyScreen>
           tierDistribution: tierDistribution,
         ),
         Expanded(
-          child: _customers.isEmpty
-              ? _buildEmptyCustomersState()
-              : _buildCustomersList(),
+          child: LoyaltyCustomersList(customers: _customers),
         ),
       ],
     );
