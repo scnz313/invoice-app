@@ -6,6 +6,7 @@ import '../models/business_category.dart';
 import '../providers/settings_provider.dart';
 import '../theme/app_theme.dart';
 import 'home_screen.dart';
+import 'main_navigation_screen.dart';
 
 class BusinessSetupScreen extends StatefulWidget {
   final BusinessCategoryData category;
@@ -578,7 +579,7 @@ class _BusinessSetupScreenState extends State<BusinessSetupScreen> {
         Navigator.of(context).pushAndRemoveUntil(
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
-                const HomeScreen(),
+                const MainNavigationScreen(),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return FadeTransition(
                 opacity: animation,

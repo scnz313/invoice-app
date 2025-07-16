@@ -20,7 +20,9 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
-  late BusinessCategory _selectedCategory;
+  BusinessCategory? _selectedCategory;
+  bool _isLoading = true;
+  String? _error;
 
   @override
   void initState() {
@@ -29,8 +31,20 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   Future<void> _loadBusinessCategory() async {
-    final settingsProvider = Provider.of<SettingsProvider>(context, listen: false);
-    _selectedCategory = await settingsProvider.getBusinessCategory();
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final settingsProvider = Provider.of<SettingsProvider>(context, listen: false);
+      _selectedCategory = await settingsProvider.getBusinessCategory();
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   List<Widget> get _screens {
@@ -45,11 +59,44 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   Widget _buildReportsScreen() {
-    return CategorySpecificReportsScreen(category: _selectedCategory);
+    return CategorySpecificReportsScreen(category: _selectedCategory!);
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(AppTheme.rausch),
+          ),
+        ),
+      );
+    }
+    if (_error != null) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Error loading business category: \n$_error!'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _loadBusinessCategory,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    if (_selectedCategory == null) {
+      return Scaffold(
+        body: Center(
+          child: Text('No business category selected.'),
+        ),
+      );
+    }
     return Scaffold(
       body: _screens[_currentIndex],
       bottomNavigationBar: _buildBottomNavigationBar(),
@@ -138,7 +185,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => CategorySpecificInvoiceCreationScreen(
-          category: _selectedCategory,
+          category: _selectedCategory!,
         ),
       ),
     );
