@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/customer_loyalty.dart';
 import '../utils/constants.dart';
 import '../utils/logger.dart';
+import '../widgets/loyalty/loyalty_summary_card.dart';
 
 class CustomerLoyaltyScreen extends StatefulWidget {
   const CustomerLoyaltyScreen({super.key});
@@ -249,9 +250,21 @@ class _CustomerLoyaltyScreenState extends State<CustomerLoyaltyScreen>
   }
 
   Widget _buildCustomersTab() {
+    final totalCustomers = _customers.length;
+    final totalPoints = _customers.fold<int>(0, (sum, customer) => sum + customer.currentPoints);
+    final totalValue = totalPoints * 0.01;
+    final tierDistribution = <LoyaltyTier, int>{};
+    for (final tier in LoyaltyTier.values) {
+      tierDistribution[tier] = _customers.where((c) => c.tier == tier).length;
+    }
     return Column(
       children: [
-        _buildLoyaltySummary(),
+        LoyaltySummaryCard(
+          totalCustomers: totalCustomers,
+          totalPoints: totalPoints,
+          totalValue: totalValue,
+          tierDistribution: tierDistribution,
+        ),
         Expanded(
           child: _customers.isEmpty
               ? _buildEmptyCustomersState()
