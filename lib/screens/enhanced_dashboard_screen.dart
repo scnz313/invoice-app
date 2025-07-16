@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
+import '../providers/enhanced_invoice_provider.dart';
 import '../models/business_category.dart';
 import '../theme/app_theme.dart';
 import 'category_specific_screens.dart';
+import '../screens/invoice_creation_screen.dart';
 
 class EnhancedDashboardScreen extends StatefulWidget {
   const EnhancedDashboardScreen({super.key});
@@ -530,9 +532,7 @@ class _EnhancedDashboardScreenState extends State<EnhancedDashboardScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => CategorySpecificInvoiceCreationScreen(
-                            category: _selectedCategory,
-                          ),
+                          builder: (context) => const InvoiceCreationScreen(),
                         ),
                       );
                     },

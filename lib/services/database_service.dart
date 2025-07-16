@@ -207,17 +207,13 @@ class DatabaseService {
         'createdAt': invoice.createdAt.toIso8601String(),
         'dueDate': invoice.dueDate.toIso8601String(),
         'status': invoice.status.name,
-        'clientId': invoice.client.id,
+        'clientId': invoice.customer.id,
         'subtotal': invoice.totals.subtotal,
         'discountTotal': invoice.totals.discountTotal,
         'taxableAmount': invoice.totals.taxableAmount,
         'taxTotal': invoice.totals.taxTotal,
         'grandTotal': invoice.totals.grandTotal,
         'currency': invoice.totals.currency,
-        'paymentMethod': invoice.paymentDetails.method.name,
-        'paymentStatus': invoice.paymentDetails.status.name,
-        'paidDate': invoice.paymentDetails.paidDate?.toIso8601String(),
-        'transactionId': invoice.paymentDetails.transactionId,
         'notes': invoice.notes,
         'terms': invoice.terms,
         'metadata': invoice.metadata != null ? jsonEncode(invoice.metadata) : null,
@@ -292,17 +288,13 @@ class DatabaseService {
           'businessCategory': invoice.businessCategory.name,
           'dueDate': invoice.dueDate.toIso8601String(),
           'status': invoice.status.name,
-          'clientId': invoice.client.id,
+          'clientId': invoice.customer.id,
           'subtotal': invoice.totals.subtotal,
           'discountTotal': invoice.totals.discountTotal,
           'taxableAmount': invoice.totals.taxableAmount,
           'taxTotal': invoice.totals.taxTotal,
           'grandTotal': invoice.totals.grandTotal,
           'currency': invoice.totals.currency,
-          'paymentMethod': invoice.paymentDetails.method.name,
-          'paymentStatus': invoice.paymentDetails.status.name,
-          'paidDate': invoice.paymentDetails.paidDate?.toIso8601String(),
-          'transactionId': invoice.paymentDetails.transactionId,
           'notes': invoice.notes,
           'terms': invoice.terms,
           'metadata': invoice.metadata != null ? jsonEncode(invoice.metadata) : null,
@@ -576,6 +568,16 @@ class DatabaseService {
     final items = await _getInvoiceItems(map['id']);
     final categoryFields = await _getCategoryFields(map['id']);
 
+    // Convert Client to Customer for EnhancedInvoice
+    final customer = Customer(
+      id: client.id,
+      name: client.name,
+      email: client.email,
+      phone: client.phone,
+      address: client.address,
+      type: CustomerType.individual,
+    );
+
     return EnhancedInvoice(
       id: map['id'],
       invoiceNumber: map['invoiceNumber'],
@@ -585,7 +587,7 @@ class DatabaseService {
       createdAt: DateTime.parse(map['createdAt']),
       dueDate: DateTime.parse(map['dueDate']),
       status: InvoiceStatus.values.firstWhere((e) => e.name == map['status']),
-      client: client,
+      customer: customer,
       items: items,
       categoryFields: categoryFields,
       totals: InvoiceTotals(

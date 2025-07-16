@@ -1,6 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-
-part 'grocery_product.g.dart';
+import 'package:flutter/material.dart';
 
 enum GroceryCategory {
   freshProduce,
@@ -50,7 +49,6 @@ enum StockAlertType {
   overstocked,
 }
 
-@JsonSerializable()
 class GroceryProduct {
   final String id;
   final String name;
@@ -100,8 +98,49 @@ class GroceryProduct {
     required this.updatedAt,
   });
 
-  factory GroceryProduct.fromJson(Map<String, dynamic> json) => _$GroceryProductFromJson(json);
-  Map<String, dynamic> toJson() => _$GroceryProductToJson(this);
+  factory GroceryProduct.fromJson(Map<String, dynamic> json) {
+    return GroceryProduct(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      brand: json['brand'] as String?,
+      category: GroceryCategory.values.firstWhere((e) => e.name == json['category']),
+      unitPrice: (json['unitPrice'] as num).toDouble(),
+      costPrice: (json['costPrice'] as num).toDouble(),
+      unitType: UnitType.values.firstWhere((e) => e.name == json['unitType']),
+      currentStock: (json['currentStock'] as num).toDouble(),
+      reorderPoint: (json['reorderPoint'] as num).toDouble(),
+      maxStock: (json['maxStock'] as num).toDouble(),
+      barcode: json['barcode'] as String?,
+      description: json['description'] as String?,
+      expiryDate: json['expiryDate'] != null ? DateTime.parse(json['expiryDate'] as String) : null,
+      supplierName: json['supplierName'] as String?,
+      supplierContact: json['supplierContact'] as String?,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'brand': brand,
+      'category': category.name,
+      'unitPrice': unitPrice,
+      'costPrice': costPrice,
+      'unitType': unitType.name,
+      'currentStock': currentStock,
+      'reorderPoint': reorderPoint,
+      'maxStock': maxStock,
+      'barcode': barcode,
+      'description': description,
+      'expiryDate': expiryDate?.toIso8601String(),
+      'supplierName': supplierName,
+      'supplierContact': supplierContact,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+    };
+  }
 
   GroceryProduct copyWith({
     String? id,

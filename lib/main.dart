@@ -34,7 +34,7 @@ class InvoiceApp extends StatelessWidget {
             title: 'Invoice App',
             theme: AppTheme.lightTheme,
             home: FutureBuilder<bool>(
-              future: settingsProvider.hasCompletedOnboarding(),
+              future: settingsProvider.hasCompletedOnboardingAsync(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Scaffold(

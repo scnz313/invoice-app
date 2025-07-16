@@ -985,7 +985,7 @@ extension WritingTypeExtension on WritingType {
       case WritingType.paint:
         return Icons.palette;
       case WritingType.ink:
-        return Icons.ink;
+        return Icons.edit;
     }
   }
 }
@@ -1035,7 +1035,7 @@ extension ArtMediumExtension on ArtMedium {
       case ArtMedium.graphite:
         return Icons.edit;
       case ArtMedium.ink:
-        return Icons.ink;
+        return Icons.edit;
       case ArtMedium.digital:
         return Icons.computer;
     }

@@ -4,6 +4,7 @@ import '../providers/enhanced_invoice_provider.dart';
 import '../providers/settings_provider.dart';
 import '../models/enhanced_invoice.dart';
 import '../models/business_category.dart';
+import '../models/client.dart';
 import '../utils/logger.dart';
 import '../widgets/category_field_widget.dart';
 import '../theme/app_theme.dart';
@@ -93,13 +94,11 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
       _items = List.from(invoice.items);
       _categoryFields = List.from(invoice.categoryFields);
       _dueDate = invoice.dueDate;
-      _paymentMethod = invoice.paymentDetails.method;
 
       _customerNameController.text = invoice.customer.name;
       _customerEmailController.text = invoice.customer.email ?? '';
       _customerPhoneController.text = invoice.customer.phone ?? '';
       _customerAddressController.text = invoice.customer.address ?? '';
-      _customerGstController.text = invoice.customer.gstNumber ?? '';
       _customerType = invoice.customer.type;
       _notesController.text = invoice.notes ?? '';
       _termsController.text = invoice.terms ?? '';
@@ -896,74 +895,76 @@ class _InvoiceCreationScreenState extends State<InvoiceCreationScreen>
       // Create or update customer
       Customer customer;
       if (_selectedCustomer != null) {
-        customer = _selectedCustomer!.copyWith(
+        customer = Customer(
+          id: _selectedCustomer!.id,
           name: _customerNameController.text,
           email: _customerEmailController.text.isEmpty ? null : _customerEmailController.text,
           phone: _customerPhoneController.text.isEmpty ? null : _customerPhoneController.text,
           address: _customerAddressController.text.isEmpty ? null : _customerAddressController.text,
-          gstNumber: _customerGstController.text.isEmpty ? null : _customerGstController.text,
           type: _customerType,
         );
-        await invoiceProvider.updateCustomer(customer);
+        await invoiceProvider.updateClient(Client(
+          id: customer.id,
+          name: customer.name,
+          email: customer.email ?? '',
+          phone: customer.phone ?? '',
+          address: customer.address ?? '',
+        ));
       } else {
-        customer = invoiceProvider.createCustomer(
+        customer = Customer(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
           name: _customerNameController.text,
           email: _customerEmailController.text.isEmpty ? null : _customerEmailController.text,
           phone: _customerPhoneController.text.isEmpty ? null : _customerPhoneController.text,
           address: _customerAddressController.text.isEmpty ? null : _customerAddressController.text,
-          gstNumber: _customerGstController.text.isEmpty ? null : _customerGstController.text,
           type: _customerType,
         );
-        await invoiceProvider.addCustomer(customer);
+        await invoiceProvider.addClient(Client(
+          id: customer.id,
+          name: customer.name,
+          email: customer.email ?? '',
+          phone: customer.phone ?? '',
+          address: customer.address ?? '',
+        ));
       }
 
       // Update category fields with values
       final updatedCategoryFields = _categoryFields.map((field) {
-        return field.copyWith(value: _categoryFieldValues[field.fieldName]);
+        return CategorySpecificField(
+          fieldName: field.fieldName,
+          fieldType: field.fieldType,
+          label: field.label,
+          value: _categoryFieldValues[field.fieldName],
+          required: field.required,
+          options: field.options,
+          validationRule: field.validationRule,
+        );
       }).toList();
 
-      // Create invoice
-      EnhancedInvoice invoice;
+      final invoice = EnhancedInvoice(
+        id: widget.editingInvoice?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+        invoiceNumber: widget.editingInvoice?.invoiceNumber ?? 'INV-${DateTime.now().millisecondsSinceEpoch}',
+        businessCategory: _selectedCategory!,
+        createdAt: widget.editingInvoice?.createdAt ?? DateTime.now(),
+        dueDate: _dueDate,
+        status: InvoiceStatus.draft,
+        customer: customer,
+        items: _items,
+        categoryFields: updatedCategoryFields,
+        totals: InvoiceTotals(
+          subtotal: 0,
+          discountTotal: 0,
+          taxableAmount: 0,
+          taxTotal: 0,
+          grandTotal: 0,
+        ),
+        notes: _notesController.text.isEmpty ? null : _notesController.text,
+        terms: _termsController.text.isEmpty ? null : _termsController.text,
+      );
+
       if (widget.editingInvoice != null) {
-        invoice = widget.editingInvoice!.copyWith(
-          customer: customer,
-          businessCategory: _selectedCategory!,
-          dueDate: _dueDate,
-          items: _items,
-          categoryFields: updatedCategoryFields,
-          totals: invoiceProvider.calculateTotals(_items),
-          paymentDetails: PaymentDetails(
-            method: _paymentMethod,
-            status: isDraft ? PaymentStatus.pending : PaymentStatus.pending,
-          ),
-          status: isDraft ? InvoiceStatus.draft : InvoiceStatus.sent,
-          notes: _notesController.text.isEmpty ? null : _notesController.text,
-          terms: _termsController.text.isEmpty ? null : _termsController.text,
-        );
         await invoiceProvider.updateInvoice(invoice);
       } else {
-        final invoiceNumber = await _generateInvoiceNumber();
-        invoice = EnhancedInvoice(
-          id: widget.editingInvoice?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-          invoiceNumber: widget.editingInvoice?.invoiceNumber ?? await _generateInvoiceNumber(),
-          businessCategory: _selectedCategory!,
-          createdAt: widget.editingInvoice?.createdAt ?? DateTime.now(),
-          dueDate: _dueDate,
-          status: InvoiceStatus.draft,
-          client: customer,
-          items: _items,
-          categoryFields: updatedCategoryFields,
-          totals: InvoiceTotals(
-            subtotal: invoiceProvider.calculateTotals(_items).subtotal,
-            discountTotal: invoiceProvider.calculateTotals(_items).discountTotal,
-            taxableAmount: invoiceProvider.calculateTotals(_items).subtotal - invoiceProvider.calculateTotals(_items).discountTotal,
-            taxTotal: invoiceProvider.calculateTotals(_items).taxTotal,
-            grandTotal: invoiceProvider.calculateTotals(_items).grandTotal,
-          ),
-          notes: _notesController.text.isEmpty ? null : _notesController.text,
-          terms: _termsController.text.isEmpty ? null : _termsController.text,
-        );
-        
         await invoiceProvider.addInvoice(invoice);
       }
 

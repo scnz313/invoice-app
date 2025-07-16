@@ -4,6 +4,7 @@ import '../providers/settings_provider.dart';
 import '../models/business_category.dart';
 import '../theme/app_theme.dart';
 import 'category_specific_screens.dart';
+import '../screens/invoice_creation_screen.dart';
 
 class EnhancedInvoiceListScreen extends StatefulWidget {
   const EnhancedInvoiceListScreen({super.key});
@@ -612,9 +613,7 @@ class _EnhancedInvoiceListScreenState extends State<EnhancedInvoiceListScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => CategorySpecificInvoiceCreationScreen(
-          category: _selectedCategory,
-        ),
+        builder: (context) => const InvoiceCreationScreen(),
       ),
     );
   }

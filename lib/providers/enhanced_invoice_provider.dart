@@ -6,6 +6,7 @@ import '../models/business_category.dart';
 import '../models/client.dart';
 import '../services/database_service.dart';
 import '../utils/logger.dart';
+import 'package:csv/csv.dart';
 
 class EnhancedInvoiceProvider with ChangeNotifier {
   final DatabaseService _databaseService = DatabaseService();
@@ -32,7 +33,7 @@ class EnhancedInvoiceProvider with ChangeNotifier {
       _setLoading(true);
       await Future.wait([
         loadInvoices(),
-        loadCustomers(),
+        loadClients(),
         loadProducts(),
         loadBusinessSettings(),
       ]);
@@ -101,52 +102,48 @@ class EnhancedInvoiceProvider with ChangeNotifier {
     }
   }
 
-  // Customer operations
-  Future<void> loadCustomers() async {
+  // Client operations
+  Future<void> loadClients() async {
     try {
-      _customers = await _databaseService.getAllCustomers();
+      _clients = await _databaseService.getAllClients();
       notifyListeners();
     } catch (e) {
-      Logger.error('Failed to load customers', 'EnhancedInvoiceProvider', e);
-      rethrow;
+      Logger.error('Failed to load clients', 'EnhancedInvoiceProvider', e);
     }
   }
 
-  Future<void> addCustomer(Customer customer) async {
+  Future<void> addClient(Client client) async {
     try {
-      await _databaseService.insertCustomer(customer);
-      _customers.add(customer);
-      _customers.sort((a, b) => a.name.compareTo(b.name));
+      await _databaseService.insertClient(client);
+      _clients.add(client);
+      _clients.sort((a, b) => a.name.compareTo(b.name));
       notifyListeners();
     } catch (e) {
-      Logger.error('Failed to add customer', 'EnhancedInvoiceProvider', e);
-      rethrow;
+      Logger.error('Failed to add client', 'EnhancedInvoiceProvider', e);
     }
   }
 
-  Future<void> updateCustomer(Customer customer) async {
+  Future<void> updateClient(Client client) async {
     try {
-      await _databaseService.updateCustomer(customer);
-      final index = _customers.indexWhere((c) => c.id == customer.id);
+      await _databaseService.updateClient(client);
+      final index = _clients.indexWhere((c) => c.id == client.id);
       if (index != -1) {
-        _customers[index] = customer;
-        _customers.sort((a, b) => a.name.compareTo(b.name));
+        _clients[index] = client;
+        _clients.sort((a, b) => a.name.compareTo(b.name));
         notifyListeners();
       }
     } catch (e) {
-      Logger.error('Failed to update customer', 'EnhancedInvoiceProvider', e);
-      rethrow;
+      Logger.error('Failed to update client', 'EnhancedInvoiceProvider', e);
     }
   }
 
-  Future<void> deleteCustomer(String id) async {
+  Future<void> deleteClient(String id) async {
     try {
-      await _databaseService.deleteCustomer(id);
-      _customers.removeWhere((customer) => customer.id == id);
+      await _databaseService.deleteClient(id);
+      _clients.removeWhere((client) => client.id == id);
       notifyListeners();
     } catch (e) {
-      Logger.error('Failed to delete customer', 'EnhancedInvoiceProvider', e);
-      rethrow;
+      Logger.error('Failed to delete client', 'EnhancedInvoiceProvider', e);
     }
   }
 
@@ -220,7 +217,17 @@ class EnhancedInvoiceProvider with ChangeNotifier {
   }) {
     final now = DateTime.now();
     final dueDate = now.add(const Duration(days: 30));
-    
+
+    // Convert Client to Customer for EnhancedInvoice
+    final customer = Customer(
+      id: client.id,
+      name: client.name,
+      email: client.email,
+      phone: client.phone,
+      address: client.address,
+      type: CustomerType.individual,
+    );
+
     return EnhancedInvoice(
       id: _uuid.v4(),
       invoiceNumber: generateInvoiceNumber(),
@@ -228,7 +235,7 @@ class EnhancedInvoiceProvider with ChangeNotifier {
       createdAt: now,
       dueDate: dueDate,
       status: InvoiceStatus.draft,
-      client: client,
+      customer: customer,
       items: items ?? [],
       categoryFields: categoryFields ?? CategoryFieldDefinitions.getFieldsForCategory(category),
       totals: InvoiceTotals(
@@ -238,10 +245,6 @@ class EnhancedInvoiceProvider with ChangeNotifier {
         taxTotal: 0.0,
         grandTotal: 0.0,
         currency: _businessSettings?.currency ?? 'INR',
-      ),
-      paymentDetails: PaymentDetails(
-        method: PaymentMethod.cash,
-        status: PaymentStatus.pending,
       ),
     );
   }
@@ -345,9 +348,9 @@ class EnhancedInvoiceProvider with ChangeNotifier {
     final lowercaseQuery = query.toLowerCase();
     return _invoices.where((invoice) {
       return invoice.invoiceNumber.toLowerCase().contains(lowercaseQuery) ||
-             invoice.client.name.toLowerCase().contains(lowercaseQuery) ||
-             invoice.client.email?.toLowerCase().contains(lowercaseQuery) == true ||
-             invoice.client.phone?.contains(query) == true;
+             invoice.customer.name.toLowerCase().contains(lowercaseQuery) ||
+             invoice.customer.email?.toLowerCase().contains(lowercaseQuery) == true ||
+             invoice.customer.phone?.contains(query) == true;
     }).toList();
   }
 
@@ -439,7 +442,6 @@ class EnhancedInvoiceProvider with ChangeNotifier {
         'Subtotal',
         'Tax',
         'Total',
-        'Payment Status',
       ]);
 
       // Add data
@@ -447,12 +449,11 @@ class EnhancedInvoiceProvider with ChangeNotifier {
         csvData.add([
           invoice.invoiceNumber,
           invoice.createdAt.toIso8601String(),
-          invoice.client.name,
+          invoice.customer.name,
           invoice.status.name,
           invoice.totals.subtotal.toString(),
           invoice.totals.taxTotal.toString(),
           invoice.totals.grandTotal.toString(),
-          invoice.paymentDetails.status.name,
         ]);
       }
 
@@ -473,19 +474,15 @@ class EnhancedInvoiceProvider with ChangeNotifier {
         'Email',
         'Phone',
         'Address',
-        'GST Number',
-        'Type',
       ]);
 
       // Add data
-      for (var customer in _customers) {
+      for (var customer in _clients) {
         csvData.add([
           customer.name,
           customer.email ?? '',
           customer.phone ?? '',
           customer.address ?? '',
-          customer.gstNumber ?? '',
-          customer.type.name,
         ]);
       }
 
@@ -523,7 +520,7 @@ class EnhancedInvoiceProvider with ChangeNotifier {
     try {
       return {
         'invoices': _invoices.map((i) => i.toJson()).toList(),
-        'customers': _customers.map((c) => c.toJson()).toList(),
+        'customers': _clients.map((c) => c.toJson()).toList(),
         'products': _products.map((p) => {
           'id': p.id,
           'name': p.name,
@@ -566,17 +563,8 @@ class EnhancedInvoiceProvider with ChangeNotifier {
       
       // Clear existing data
       _invoices.clear();
-      _customers.clear();
+      _clients.clear();
       _products.clear();
-      
-      // Import customers
-      if (data['customers'] != null) {
-        for (var customerData in data['customers']) {
-          final customer = Customer.fromJson(customerData);
-          await _databaseService.insertCustomer(customer);
-          _customers.add(customer);
-        }
-      }
       
       // Import products
       if (data['products'] != null) {
@@ -636,6 +624,23 @@ class EnhancedInvoiceProvider with ChangeNotifier {
         for (var clientData in data['clients']) {
           final client = Client.fromJson(clientData);
           await _databaseService.insertClient(client);
+          _clients.add(client);
+        }
+      }
+      
+      // Import customers (legacy support)
+      if (data['customers'] != null) {
+        for (var customerData in data['customers']) {
+          final customer = Customer.fromJson(customerData);
+          await _databaseService.insertCustomer(customer);
+          // Convert Customer to Client for internal use
+          final client = Client(
+            id: customer.id,
+            name: customer.name,
+            email: customer.email ?? '',
+            phone: customer.phone ?? '',
+            address: customer.address ?? '',
+          );
           _clients.add(client);
         }
       }

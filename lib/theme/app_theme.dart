@@ -76,6 +76,18 @@ class AppTheme {
     color: snow,
   );
 
+  static const TextStyle headline2 = TextStyle(
+    fontSize: 32,
+    fontWeight: FontWeight.w600,
+    color: hof,
+  );
+  
+  static const TextStyle headline3 = TextStyle(
+    fontSize: 28,
+    fontWeight: FontWeight.w600,
+    color: hof,
+  );
+
   // Color aliases for compatibility
   static const Color primaryColor = rausch;
   static const Color backgroundColor = ghost;

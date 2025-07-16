@@ -116,15 +116,10 @@ class SettingsProvider with ChangeNotifier {
     return _selectedBusinessCategory ?? BusinessCategory.groceryStore; // default fallback
   }
 
-  // Check if onboarding is complete
-  Future<bool> hasCompletedOnboarding() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('onboarding_complete') ?? false;
-  }
-
-  // Mark onboarding as complete
-  Future<void> completeOnboarding() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('onboarding_complete', true);
+  // Check if onboarding is complete - async version
+  Future<bool> hasCompletedOnboardingAsync() async {
+    if (_hasCompletedOnboarding) return true;
+    await loadSettings();
+    return _hasCompletedOnboarding;
   }
 } 

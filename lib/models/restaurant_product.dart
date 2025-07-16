@@ -776,7 +776,7 @@ extension MenuCategoryExtension on MenuCategory {
       case MenuCategory.vegan:
         return Icons.spa;
       case MenuCategory.glutenFree:
-        return Icons.allergy;
+        return Icons.warning;
       case MenuCategory.kidsMenu:
         return Icons.child_care;
     }

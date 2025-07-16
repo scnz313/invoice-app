@@ -1,9 +1,9 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'business_category.dart';
 
-part 'enhanced_invoice.g.dart';
+// Remove the part directive
+// part 'enhanced_invoice.g.dart';
 
-@JsonSerializable()
 class EnhancedInvoice {
   final String id;
   final String invoiceNumber;
@@ -15,12 +15,11 @@ class EnhancedInvoice {
   final List<InvoiceItem> items;
   final List<CategorySpecificField> categoryFields;
   final InvoiceTotals totals;
-  final PaymentDetails paymentDetails;
   final String? notes;
   final String? terms;
   final Map<String, dynamic>? metadata;
 
-  EnhancedInvoice({
+  const EnhancedInvoice({
     required this.id,
     required this.invoiceNumber,
     required this.businessCategory,
@@ -31,16 +30,44 @@ class EnhancedInvoice {
     required this.items,
     required this.categoryFields,
     required this.totals,
-    required this.paymentDetails,
     this.notes,
     this.terms,
     this.metadata,
   });
 
-  factory EnhancedInvoice.fromJson(Map<String, dynamic> json) =>
-      _$EnhancedInvoiceFromJson(json);
+  factory EnhancedInvoice.fromJson(Map<String, dynamic> json) {
+    return EnhancedInvoice(
+      id: json['id'] as String,
+      invoiceNumber: json['invoiceNumber'] as String,
+      businessCategory: BusinessCategory.values.firstWhere((e) => e.name == json['businessCategory']),
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      dueDate: DateTime.parse(json['dueDate'] as String),
+      status: InvoiceStatus.values.firstWhere((e) => e.name == json['status']),
+      customer: Customer.fromJson(json['customer'] as Map<String, dynamic>),
+      items: (json['items'] as List).map((item) => InvoiceItem.fromJson(item as Map<String, dynamic>)).toList(),
+      categoryFields: (json['categoryFields'] as List).map((field) => CategorySpecificField.fromJson(field as Map<String, dynamic>)).toList(),
+      totals: InvoiceTotals.fromJson(json['totals'] as Map<String, dynamic>),
+      notes: json['notes'] as String?,
+      terms: json['terms'] as String?,
+    );
+  }
 
-  Map<String, dynamic> toJson() => _$EnhancedInvoiceToJson(this);
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'invoiceNumber': invoiceNumber,
+      'businessCategory': businessCategory.name,
+      'createdAt': createdAt.toIso8601String(),
+      'dueDate': dueDate.toIso8601String(),
+      'status': status.name,
+      'customer': customer.toJson(),
+      'items': items.map((item) => item.toJson()).toList(),
+      'categoryFields': categoryFields.map((field) => field.toJson()).toList(),
+      'totals': totals.toJson(),
+      'notes': notes,
+      'terms': terms,
+    };
+  }
 
   EnhancedInvoice copyWith({
     String? id,
@@ -53,7 +80,6 @@ class EnhancedInvoice {
     List<InvoiceItem>? items,
     List<CategorySpecificField>? categoryFields,
     InvoiceTotals? totals,
-    PaymentDetails? paymentDetails,
     String? notes,
     String? terms,
     Map<String, dynamic>? metadata,
@@ -69,7 +95,6 @@ class EnhancedInvoice {
       items: items ?? this.items,
       categoryFields: categoryFields ?? this.categoryFields,
       totals: totals ?? this.totals,
-      paymentDetails: paymentDetails ?? this.paymentDetails,
       notes: notes ?? this.notes,
       terms: terms ?? this.terms,
       metadata: metadata ?? this.metadata,
@@ -77,7 +102,6 @@ class EnhancedInvoice {
   }
 }
 
-@JsonSerializable()
 class Customer {
   final String id;
   final String name;
@@ -99,13 +123,31 @@ class Customer {
     this.categorySpecificData,
   });
 
-  factory Customer.fromJson(Map<String, dynamic> json) =>
-      _$CustomerFromJson(json);
+  factory Customer.fromJson(Map<String, dynamic> json) {
+    return Customer(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      email: json['email'] as String?,
+      phone: json['phone'] as String?,
+      address: json['address'] as String?,
+      gstNumber: json['gstNumber'] as String?,
+      type: CustomerType.values.firstWhere((e) => e.name == json['type']),
+    );
+  }
 
-  Map<String, dynamic> toJson() => _$CustomerToJson(this);
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'email': email,
+      'phone': phone,
+      'address': address,
+      'gstNumber': gstNumber,
+      'type': type.name,
+    };
+  }
 }
 
-@JsonSerializable()
 class InvoiceItem {
   final String id;
   final String name;
@@ -137,13 +179,37 @@ class InvoiceItem {
   double get taxAmount => taxableAmount * (taxRate / 100);
   double get total => taxableAmount + taxAmount;
 
-  factory InvoiceItem.fromJson(Map<String, dynamic> json) =>
-      _$InvoiceItemFromJson(json);
+  factory InvoiceItem.fromJson(Map<String, dynamic> json) {
+    return InvoiceItem(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      description: json['description'] as String?,
+      quantity: (json['quantity'] as num).toDouble(),
+      unit: json['unit'] as String,
+      unitPrice: (json['unitPrice'] as num).toDouble(),
+      discount: (json['discount'] as num).toDouble(),
+      taxRate: (json['taxRate'] as num).toDouble(),
+      categoryFields: (json['categoryFields'] as List).map((field) => CategorySpecificField.fromJson(field as Map<String, dynamic>)).toList(),
+      metadata: json['metadata'] as Map<String, dynamic>?,
+    );
+  }
 
-  Map<String, dynamic> toJson() => _$InvoiceItemToJson(this);
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'quantity': quantity,
+      'unit': unit,
+      'unitPrice': unitPrice,
+      'discount': discount,
+      'taxRate': taxRate,
+      'categoryFields': categoryFields.map((field) => field.toJson()).toList(),
+      'metadata': metadata,
+    };
+  }
 }
 
-@JsonSerializable()
 class CategorySpecificField {
   final String fieldName;
   final String fieldType;
@@ -163,13 +229,31 @@ class CategorySpecificField {
     this.validationRule,
   });
 
-  factory CategorySpecificField.fromJson(Map<String, dynamic> json) =>
-      _$CategorySpecificFieldFromJson(json);
+  factory CategorySpecificField.fromJson(Map<String, dynamic> json) {
+    return CategorySpecificField(
+      fieldName: json['fieldName'] as String,
+      fieldType: json['fieldType'] as String,
+      label: json['label'] as String,
+      value: json['value'],
+      required: json['required'] as bool,
+      options: (json['options'] as List?)?.cast<String>(),
+      validationRule: json['validationRule'] as String?,
+    );
+  }
 
-  Map<String, dynamic> toJson() => _$CategorySpecificFieldToJson(this);
+  Map<String, dynamic> toJson() {
+    return {
+      'fieldName': fieldName,
+      'fieldType': fieldType,
+      'label': label,
+      'value': value,
+      'required': required,
+      'options': options,
+      'validationRule': validationRule,
+    };
+  }
 }
 
-@JsonSerializable()
 class InvoiceTotals {
   final double subtotal;
   final double discountTotal;
@@ -187,13 +271,27 @@ class InvoiceTotals {
     this.currency = 'INR',
   });
 
-  factory InvoiceTotals.fromJson(Map<String, dynamic> json) =>
-      _$InvoiceTotalsFromJson(json);
+  factory InvoiceTotals.fromJson(Map<String, dynamic> json) {
+    return InvoiceTotals(
+      subtotal: (json['subtotal'] as num).toDouble(),
+      discountTotal: (json['discountTotal'] as num).toDouble(),
+      taxableAmount: (json['taxableAmount'] as num).toDouble(),
+      taxTotal: (json['taxTotal'] as num).toDouble(),
+      grandTotal: (json['grandTotal'] as num).toDouble(),
+    );
+  }
 
-  Map<String, dynamic> toJson() => _$InvoiceTotalsToJson(this);
+  Map<String, dynamic> toJson() {
+    return {
+      'subtotal': subtotal,
+      'discountTotal': discountTotal,
+      'taxableAmount': taxableAmount,
+      'taxTotal': taxTotal,
+      'grandTotal': grandTotal,
+    };
+  }
 }
 
-@JsonSerializable()
 class PaymentDetails {
   final PaymentMethod method;
   final PaymentStatus status;
@@ -209,10 +307,25 @@ class PaymentDetails {
     this.notes,
   });
 
-  factory PaymentDetails.fromJson(Map<String, dynamic> json) =>
-      _$PaymentDetailsFromJson(json);
+  factory PaymentDetails.fromJson(Map<String, dynamic> json) {
+    return PaymentDetails(
+      method: PaymentMethod.values.firstWhere((e) => e.name == json['method']),
+      status: PaymentStatus.values.firstWhere((e) => e.name == json['status']),
+      paidDate: json['paidDate'] != null ? DateTime.parse(json['paidDate'] as String) : null,
+      transactionId: json['transactionId'] as String?,
+      notes: json['notes'] as String?,
+    );
+  }
 
-  Map<String, dynamic> toJson() => _$PaymentDetailsToJson(this);
+  Map<String, dynamic> toJson() {
+    return {
+      'method': method.name,
+      'status': status.name,
+      'paidDate': paidDate?.toIso8601String(),
+      'transactionId': transactionId,
+      'notes': notes,
+    };
+  }
 }
 
 enum InvoiceStatus {
@@ -751,18 +864,29 @@ class CategoryFieldDefinitions {
         return getElectronicsFields();
       case BusinessCategory.hardwareStore:
         return getHardwareFields();
-      case BusinessCategory.pharmacy:
-        return getPharmacyFields();
       case BusinessCategory.stationeryStore:
         return getStationeryFields();
-      case BusinessCategory.beautySalon:
-        return getBeautySalonFields();
-      case BusinessCategory.autoPartsStore:
-        return getAutoPartsFields();
       case BusinessCategory.bakery:
         return getBakeryFields();
-      case BusinessCategory.mobileRepairShop:
-        return getMobileRepairFields();
+      case BusinessCategory.other:
+        return getOtherFields();
     }
+  }
+
+  static List<CategorySpecificField> getOtherFields() {
+    return [
+      CategorySpecificField(
+        fieldName: 'service_type',
+        fieldType: 'text',
+        label: 'Service Type',
+        required: true,
+      ),
+      CategorySpecificField(
+        fieldName: 'notes',
+        fieldType: 'textarea',
+        label: 'Additional Notes',
+        required: false,
+      ),
+    ];
   }
 }

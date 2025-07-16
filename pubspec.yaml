@@ -61,7 +61,7 @@ dependencies:
   encrypt: ^5.0.3
 
   # CSV Export
-  csv: ^5.1.1
+  csv: ^5.0.2
 
   # Excel Export
   excel: ^2.1.0

@@ -9,17 +9,18 @@ enum BusinessCategory {
   hardwareStore,
   bakery,
   stationeryStore,
+  other,
 }
 
 extension BusinessCategoryExtension on BusinessCategory {
   String get displayName {
     switch (this) {
-      case BusinessCategory.jewelryStore:
-        return 'Jewelry Store';
       case BusinessCategory.groceryStore:
         return 'Grocery Store';
+      case BusinessCategory.jewelryStore:
+        return 'Jewelry Store';
       case BusinessCategory.restaurantCafe:
-        return 'Restaurant/Café';
+        return 'Restaurant/Cafe';
       case BusinessCategory.clothingStore:
         return 'Clothing Store';
       case BusinessCategory.electronicsStore:
@@ -30,69 +31,77 @@ extension BusinessCategoryExtension on BusinessCategory {
         return 'Bakery';
       case BusinessCategory.stationeryStore:
         return 'Stationery Store';
+      case BusinessCategory.other:
+        return 'Other';
     }
   }
 
   String get description {
     switch (this) {
-      case BusinessCategory.jewelryStore:
-        return 'Sell jewelry, watches, and precious metals with certification tracking';
       case BusinessCategory.groceryStore:
-        return 'Sell groceries, fresh produce, and household items with inventory management';
+        return 'Sell fresh produce, packaged goods, and daily essentials';
+      case BusinessCategory.jewelryStore:
+        return 'Sell jewelry, precious metals, and accessories';
       case BusinessCategory.restaurantCafe:
-        return 'Serve food and beverages with table management and kitchen orders';
+        return 'Serve food and beverages to customers';
       case BusinessCategory.clothingStore:
-        return 'Sell clothing, accessories, and fashion items with size and color variants';
+        return 'Sell clothing, footwear, and fashion accessories';
       case BusinessCategory.electronicsStore:
-        return 'Sell electronics, gadgets, and tech accessories with warranty tracking';
+        return 'Sell electronic devices, gadgets, and accessories';
       case BusinessCategory.hardwareStore:
-        return 'Sell tools, building materials, and hardware with project tracking';
+        return 'Sell tools, building materials, and hardware supplies';
       case BusinessCategory.bakery:
-        return 'Sell fresh baked goods, cakes, and pastries with production scheduling';
+        return 'Bake and sell bread, pastries, and baked goods';
       case BusinessCategory.stationeryStore:
-        return 'Sell office supplies, books, and stationery items with bulk pricing';
+        return 'Sell office supplies, books, and stationery items';
+      case BusinessCategory.other:
+        return 'Other type of business';
     }
   }
 
   IconData get icon {
     switch (this) {
+      case BusinessCategory.groceryStore:
+        return Icons.local_grocery_store;
       case BusinessCategory.jewelryStore:
         return Icons.diamond;
-      case BusinessCategory.groceryStore:
-        return Icons.shopping_basket;
       case BusinessCategory.restaurantCafe:
         return Icons.restaurant;
       case BusinessCategory.clothingStore:
         return Icons.checkroom;
       case BusinessCategory.electronicsStore:
-        return Icons.devices;
+        return Icons.electrical_services;
       case BusinessCategory.hardwareStore:
-        return Icons.build;
+        return Icons.hardware;
       case BusinessCategory.bakery:
-        return Icons.cake;
+        return Icons.bakery_dining;
       case BusinessCategory.stationeryStore:
         return Icons.edit;
+      case BusinessCategory.other:
+        return Icons.business;
     }
   }
 
   Color get color {
     switch (this) {
-      case BusinessCategory.jewelryStore:
-        return Colors.amber;
       case BusinessCategory.groceryStore:
         return Colors.green;
+      case BusinessCategory.jewelryStore:
+        return Colors.amber;
       case BusinessCategory.restaurantCafe:
         return Colors.orange;
       case BusinessCategory.clothingStore:
-        return Colors.pink;
+        return Colors.purple;
       case BusinessCategory.electronicsStore:
         return Colors.blue;
       case BusinessCategory.hardwareStore:
         return Colors.brown;
       case BusinessCategory.bakery:
-        return Colors.orange;
+        return Colors.pink;
       case BusinessCategory.stationeryStore:
-        return Colors.purple;
+        return Colors.indigo;
+      case BusinessCategory.other:
+        return Colors.grey;
     }
   }
 
@@ -186,6 +195,8 @@ extension BusinessCategoryExtension on BusinessCategory {
           'Corporate Accounts',
           'Educational Discounts',
         ];
+      case BusinessCategory.other:
+        return ['Other specific features'];
     }
   }
 
@@ -311,6 +322,8 @@ extension BusinessCategoryExtension on BusinessCategory {
           'Gifts',
           'Printing Services',
         ];
+      case BusinessCategory.other:
+        return ['Other product categories'];
     }
   }
 
@@ -397,6 +410,8 @@ extension BusinessCategoryExtension on BusinessCategory {
           'School Account',
           'Printing Payment',
         ];
+      case BusinessCategory.other:
+        return ['Cash', 'UPI', 'Card', 'Bank Transfer'];
     }
   }
 
@@ -490,6 +505,8 @@ extension BusinessCategoryExtension on BusinessCategory {
           'Art Supplies',
           'Educational Discounts',
         ];
+      case BusinessCategory.other:
+        return ['Other report types'];
     }
   }
 
@@ -692,6 +709,28 @@ extension BusinessCategoryExtension on BusinessCategory {
             'corporateAccounts': true,
             'printingServices': true,
             'educationalDiscounts': true,
+          },
+        };
+      case BusinessCategory.other:
+        return {
+          'taxRate': 18.0,
+          'currency': '₹',
+          'language': 'English',
+          'timezone': 'Asia/Kolkata',
+          'businessHours': {
+            'monday': {'open': '09:00', 'close': '19:00'},
+            'tuesday': {'open': '09:00', 'close': '19:00'},
+            'wednesday': {'open': '09:00', 'close': '19:00'},
+            'thursday': {'open': '09:00', 'close': '19:00'},
+            'friday': {'open': '09:00', 'close': '19:00'},
+            'saturday': {'open': '09:00', 'close': '18:00'},
+            'sunday': {'open': '10:00', 'close': '17:00'},
+          },
+          'features': {
+            'warrantyTracking': true,
+            'certificationTracking': true,
+            'layawayPlans': true,
+            'insuranceClaims': true,
           },
         };
     }
