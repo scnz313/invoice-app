@@ -13,6 +13,9 @@ import '../widgets/recent_invoice_card.dart';
 import '../widgets/quick_action_button.dart';
 import 'grocery_invoice_creation_screen.dart';
 import 'inventory_management_screen.dart';
+import '../widgets/dashboard/quick_stats_card.dart';
+import '../widgets/dashboard/recent_activity_card.dart';
+import '../widgets/dashboard/quick_actions_card.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -143,7 +146,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       position: _slideAnimation,
                       child: FadeTransition(
                         opacity: _fadeAnimation,
-                        child: _buildStatisticsSection(invoiceProvider),
+                        child: const QuickStatsCard(),
                       ),
                     ),
 
@@ -165,7 +168,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       position: _slideAnimation,
                       child: FadeTransition(
                         opacity: _fadeAnimation,
-                        child: _buildQuickActionsSection(),
+                        child: const QuickActionsCard(),
                       ),
                     ),
 
@@ -674,94 +677,6 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildQuickActionsSection() {
-    return Consumer<SettingsProvider>(
-      builder: (context, settingsProvider, child) {
-        final businessCategory = settingsProvider.selectedBusinessCategory;
-        final isGroceryStore = businessCategory == BusinessCategory.groceryStore;
-        
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Quick Actions',
-              style: AirbnbTheme.headlineStyle.copyWith(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 16),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 1.5,
-              children: [
-                QuickActionButton(
-                  title: isGroceryStore ? 'Scan & Invoice' : 'New Invoice',
-                  icon: isGroceryStore ? Icons.qr_code_scanner : Icons.add_circle_outline,
-                  color: AirbnbTheme.primaryColor,
-                  onTap: () {
-                    if (isGroceryStore) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const GroceryInvoiceCreationScreen(),
-                        ),
-                      );
-                    } else {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const InvoiceCreationScreen(),
-                        ),
-                      );
-                    }
-                  },
-                ),
-                QuickActionButton(
-                  title: 'Add Customer',
-                  icon: Icons.person_add_outlined,
-                  color: Colors.green,
-                  onTap: () {
-                    // TODO: Navigate to customer creation
-                  },
-                ),
-                QuickActionButton(
-                  title: isGroceryStore ? 'Inventory' : 'Add Product',
-                  icon: isGroceryStore ? Icons.inventory : Icons.inventory_2_outlined,
-                  color: Colors.orange,
-                  onTap: () {
-                    if (isGroceryStore) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const InventoryManagementScreen(),
-                        ),
-                      );
-                    } else {
-                      // TODO: Navigate to product creation
-                    }
-                  },
-                ),
-                QuickActionButton(
-                  title: 'View Reports',
-                  icon: Icons.analytics_outlined,
-                  color: Colors.purple,
-                  onTap: () {
-                    // TODO: Navigate to reports
-                  },
-                ),
-              ],
-            ),
-          ],
-        );
-      },
     );
   }
 

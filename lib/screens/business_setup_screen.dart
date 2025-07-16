@@ -5,7 +5,6 @@ import 'dart:io';
 import '../models/business_category.dart';
 import '../providers/settings_provider.dart';
 import '../theme/app_theme.dart';
-import 'home_screen.dart';
 import 'main_navigation_screen.dart';
 
 class BusinessSetupScreen extends StatefulWidget {
