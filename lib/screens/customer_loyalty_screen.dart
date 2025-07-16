@@ -5,6 +5,8 @@ import '../utils/logger.dart';
 import '../widgets/loyalty/loyalty_summary_card.dart';
 import '../widgets/loyalty/loyalty_customers_list.dart';
 import '../widgets/loyalty/loyalty_transactions_list.dart';
+import '../widgets/loyalty/loyalty_rules_list.dart';
+import '../widgets/loyalty/loyalty_rewards_list.dart';
 
 class CustomerLoyaltyScreen extends StatefulWidget {
   const CustomerLoyaltyScreen({super.key});
@@ -244,8 +246,8 @@ class _CustomerLoyaltyScreenState extends State<CustomerLoyaltyScreen>
               children: [
                 _buildCustomersTab(),
                 LoyaltyTransactionsList(transactions: _transactions),
-                _buildRulesTab(),
-                _buildRewardsTab(),
+                LoyaltyRulesList(rules: _rules),
+                LoyaltyRewardsList(rewards: _rewards),
               ],
             ),
     );
